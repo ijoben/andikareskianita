@@ -165,4 +165,4 @@ app.put("/api/admin/password", requireAuth, (req, res) => {
 app.get("/admin/{*path}", (req, res) => res.sendFile(path.join(__dirname, "admin", "index.html")));
 app.get("/{*path}", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-app.listen(PORT, () => { console.log("Server: http://localhost:" + PORT); console.log("Admin: http://localhost:" + PORT + "/admin/"); });
+app.listen(PORT, "0.0.0.0", () => { console.log("Server: http://localhost:" + PORT); console.log("Admin: http://localhost:" + PORT + "/admin/"); });

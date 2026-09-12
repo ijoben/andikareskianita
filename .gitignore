@@ -4,4 +4,7 @@ uploads/
 tmp/
 *.log
 _build.js
+_h1.txt
+_h2.txt
+_freebuff/
 .freebuff/
