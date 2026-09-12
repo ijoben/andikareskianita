@@ -1,6 +1,7 @@
 (function(){
 var w=null,g=[],ci=0,mp=false,au=null;
 function gE(id){return document.getElementById(id)}
+
 function init(){
   gE('open-btn').onclick=openInv;
   gE('rsvp-form').onsubmit=submitRsvp;
@@ -9,7 +10,82 @@ function init(){
   gE('lightbox-prev').onclick=function(){ci=(ci-1+g.length)%g.length;showLB(ci)};
   gE('lightbox-next').onclick=function(){ci=(ci+1)%g.length;showLB(ci)};
   gE('lightbox').onclick=function(e){if(e.target===e.currentTarget)closeLB()};
+  gE('scroll-down-btn').onclick=function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
   load();
+}
+
+// === FLOWER PETALS ===
+function createFlowerPetals(count){
+  var container=gE('flower-petals');
+  if(!container)return;
+  container.innerHTML='';
+  var petalColors=['#f8a4c8','#f472b6','#ec4899','#f9a8d4','#fbcfe8','#fda4af','#fb7185'];
+  for(var i=0;i<count;i++){
+    var p=document.createElement('div');
+    p.className='petal';
+    var size=Math.random()*16+10;
+    var color=petalColors[Math.floor(Math.random()*petalColors.length)];
+    var opacity=(Math.random()*.3+.15).toFixed(2);
+    var duration=(Math.random()*8+8).toFixed(1);
+    var delay=(Math.random()*12).toFixed(1);
+    var drift=(Math.random()*160-80).toFixed(0);
+    var spin=(Math.random()*720-360).toFixed(0);
+    p.style.cssText='--size:'+size+'px;--opacity:'+opacity+';--duration:'+duration+'s;--delay:'+delay+'s;--drift:'+drift+'px;--spin:'+spin+'deg;left:'+Math.random()*100+'%';
+    p.innerHTML='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 10 12 14 12 14S16.5 10 16.5 6.5C16.5 4 14.5 2 12 2Z" fill="'+color+'"/><ellipse cx="8" cy="8" rx="4" ry="5" fill="'+color+'" opacity=".7" transform="rotate(-30 8 8)"/><ellipse cx="16" cy="8" rx="4" ry="5" fill="'+color+'" opacity=".7" transform="rotate(30 16 8)"/></svg>';
+    container.appendChild(p);
+  }
+}
+
+// === THEME ===
+function applyTheme(theme){
+  if(!theme)return;
+  var r=document.documentElement.style;
+  if(theme.primaryColor)r.setProperty('--theme-primary',theme.primaryColor);
+  if(theme.primaryColorLight)r.setProperty('--theme-primary-light',theme.primaryColorLight);
+  if(theme.primaryColorDark)r.setProperty('--theme-primary-dark',theme.primaryColorDark);
+  if(theme.darkBg)r.setProperty('--theme-dark-bg',theme.darkBg);
+  if(theme.bodyBg)r.setProperty('--theme-body-bg',theme.bodyBg);
+  if(theme.bodyText)r.setProperty('--theme-body-text',theme.bodyText);
+  // Hero background
+  if(theme.heroBg){
+    var hb=document.querySelector('.hero-bg');
+    if(hb)hb.style.backgroundImage='url("'+theme.heroBg+'")';
+  }
+  // Open overlay background
+  if(theme.openBg){
+    var ob=gE('open-overlay');
+    if(ob)ob.style.background='url("'+theme.openBg+'") center/cover';
+  }
+  // Section backgrounds
+  var sectionBgs={couple:'couple-section',story:'story-section',events:'events-section',gallery:'gallery-section',rsvp:'rsvp-section'};
+  Object.keys(sectionBgs).forEach(function(key){
+    var url=theme[key+'Bg'];
+    var cls=sectionBgs[key];
+    var el=document.querySelector('.'+cls);
+    if(!el)return;
+    if(url){
+      el.classList.add('section-bg');
+      el.style.backgroundImage='url("'+url+'")';
+    }else{
+      el.classList.remove('section-bg');
+      el.style.backgroundImage='';
+    }
+  });
+}
+
+// === LOAD DATA ===
+async function load(){
+  try{
+    var r1=await fetch('/api/wedding');w=await r1.json();
+    var r2=await fetch('/api/gallery');g=await r2.json();
+    var r3=await fetch('/api/stories');var st=await r3.json();
+    var r4=await fetch('/api/wishes');var wi=await r4.json();
+    if(w.theme)applyTheme(w.theme);
+    updCouple();renderEvents();renderGallery();renderStories(st);renderWishes(wi);initMusic();
+    createFlowerPetals(20);
+    createParticles('open-particles',8);
+    initScrollObserver();
+  }catch(e){console.error(e)}
 }
 
 function openInv(){
@@ -18,6 +94,7 @@ function openInv(){
   setTimeout(function(){
     o.classList.add('hidden');
     gE('main-content').classList.remove('hidden');
+    gE('scroll-down-btn').classList.remove('hidden');
     initReveal();
     startCountdown();
     createParticles('hero-particles',15);
@@ -25,8 +102,8 @@ function openInv(){
   },800);
 }
 
-function createParticles(containerId,count){
-  var c=document.getElementById(containerId);
+function createParticles(id,count){
+  var c=document.getElementById(id);
   if(!c)return;
   for(var i=0;i<count;i++){
     var p=document.createElement('div');
@@ -40,38 +117,49 @@ function createParticles(containerId,count){
   }
 }
 
-function applyTheme(theme){
-  if(!theme)return;
-  var r=document.documentElement.style;
-  if(theme.primaryColor)r.setProperty('--theme-primary',theme.primaryColor);
-  if(theme.primaryColorLight)r.setProperty('--theme-primary-light',theme.primaryColorLight);
-  if(theme.primaryColorDark)r.setProperty('--theme-primary-dark',theme.primaryColorDark);
-  if(theme.darkBg)r.setProperty('--theme-dark-bg',theme.darkBg);
-  if(theme.bodyBg)r.setProperty('--theme-body-bg',theme.bodyBg);
-  if(theme.bodyText)r.setProperty('--theme-body-text',theme.bodyText);
-  if(theme.heroBg){
-    r.setProperty('--theme-hero-bg','url("'+theme.heroBg+'")');
-    var hb=document.querySelector('.hero-bg');
-    if(hb)hb.style.backgroundImage='url("'+theme.heroBg+'")';
-  }
-  if(theme.openBg){
-    var ob=document.querySelector('.open-overlay');
-    if(ob)ob.style.background='url("'+theme.openBg+'") center/cover';
-  }
+// === SCROLL TO SECTION ===
+window.scrollToSection=function(id){
+  var el=document.getElementById(id);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+// === BOTTOM NAV + SCROLL BUTTON OBSERVER ===
+function initScrollObserver(){
+  var sections=['hero','couple','story','events','gallery','rsvp','wishes'];
+  var navItems=document.querySelectorAll('.bottom-nav-item');
+  var scrollBtn=gE('scroll-down-btn');
+
+  // Toggle scroll-down button
+  window.addEventListener('scroll',function(){
+    var st=window.scrollY;
+    if(st>window.innerHeight*.5){
+      scrollBtn.classList.remove('hidden');
+      scrollBtn.querySelector('i').className='fas fa-chevron-up';
+      scrollBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'})};
+    }else{
+      scrollBtn.classList.add('hidden');
+    }
+  });
+
+  // Active nav item
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var id=entry.target.id;
+        navItems.forEach(function(item,i){
+          var target=['hero','couple','story','events','gallery','rsvp','wishes'][i];
+          item.classList.toggle('active',target===id);
+        });
+      }
+    });
+  },{threshold:0.3});
+  sections.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)observer.observe(el);
+  });
 }
 
-async function load(){
-  try{
-    var r1=await fetch('/api/wedding');w=await r1.json();
-    var r2=await fetch('/api/gallery');g=await r2.json();
-    var r3=await fetch('/api/stories');var st=await r3.json();
-    var r4=await fetch('/api/wishes');var wi=await r4.json();
-    if(w.theme)applyTheme(w.theme);
-    updCouple();renderEvents();renderGallery();renderStories(st);renderWishes(wi);initMusic();
-    createParticles('open-particles',8);
-  }catch(e){console.error(e)}
-}
-
+// === DATA UPDATES ===
 function updCouple(){
   if(!w)return;var c=w.couple,e=w.events[0];
   gE('hero-groom').textContent=c.groom.name;

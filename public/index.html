@@ -10,6 +10,10 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+  <!-- Flower Petals -->
+  <div class="flower-petals" id="flower-petals"></div>
+
+  <!-- Open Overlay -->
   <div id="open-overlay" class="open-overlay">
     <div class="particles" id="open-particles"></div>
     <div class="open-envelope">
@@ -20,9 +24,12 @@
     </div>
   </div>
 
+  <!-- Main Content -->
   <div id="main-content" class="main-content hidden">
     <button id="music-toggle" class="music-toggle" title="Toggle Music"><i class="fas fa-music"></i></button>
+    <button id="scroll-down-btn" class="scroll-down-btn hidden" title="Scroll ke bawah"><i class="fas fa-chevron-down"></i></button>
 
+    <!-- Hero -->
     <section id="hero" class="section hero-section">
       <div class="hero-bg"></div>
       <div class="particles" id="hero-particles"></div>
@@ -42,6 +49,7 @@
       </div>
     </section>
 
+    <!-- Countdown -->
     <section id="countdown" class="section countdown-section">
       <div class="container">
         <h2 class="section-title reveal">Menuju Hari Bahagia</h2>
@@ -57,6 +65,7 @@
       </div>
     </section>
 
+    <!-- Couple -->
     <section id="couple" class="section couple-section">
       <div class="section-ornament">&hearts;</div>
       <div class="container">
@@ -81,21 +90,25 @@
       </div>
     </section>
 
+    <!-- Love Story -->
     <section id="story" class="section story-section">
       <div class="section-ornament">&#10047;</div>
       <div class="container"><h2 class="section-title reveal">Love Story</h2><div class="timeline" id="story-timeline"></div></div>
     </section>
 
+    <!-- Events -->
     <section id="events" class="section events-section">
       <div class="section-ornament">&#128141;</div>
       <div class="container"><h2 class="section-title reveal">Waktu &amp; Tempat</h2><div class="events-grid" id="events-grid"></div></div>
     </section>
 
+    <!-- Gallery -->
     <section id="gallery" class="section gallery-section">
       <div class="section-ornament">&#128247;</div>
       <div class="container"><h2 class="section-title reveal">Galeri</h2><div class="gallery-grid" id="gallery-grid"></div></div>
     </section>
 
+    <!-- RSVP -->
     <section id="rsvp" class="section rsvp-section">
       <div class="section-ornament">&#9993;</div>
       <div class="container">
@@ -120,10 +133,12 @@
       </div>
     </section>
 
+    <!-- Wishes -->
     <section id="wishes" class="section wishes-section">
       <div class="container"><h2 class="section-title reveal">Ucapan &amp; Doa</h2><div class="wishes-grid" id="wishes-grid"></div></div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <div class="footer-couple"><span id="footer-groom">Ahmad</span> <i class="fas fa-heart"></i> <span id="footer-bride">Fatimah</span></div>
@@ -134,6 +149,18 @@
     </footer>
   </div>
 
+  <!-- Bottom Navigation (Mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bottom-nav-item active" onclick="scrollToSection('hero')"><i class="fas fa-home"></i><span>Home</span></button>
+      <button class="bottom-nav-item" onclick="scrollToSection('couple')"><i class="fas fa-heart"></i><span>Mempelai</span></button>
+      <button class="bottom-nav-item" onclick="scrollToSection('events')"><i class="fas fa-calendar"></i><span>Acara</span></button>
+      <button class="bottom-nav-item" onclick="scrollToSection('gallery')"><i class="fas fa-images"></i><span>Galeri</span></button>
+      <button class="bottom-nav-item" onclick="scrollToSection('rsvp')"><i class="fas fa-check-circle"></i><span>RSVP</span></button>
+    </div>
+  </nav>
+
+  <!-- Lightbox -->
   <div id="lightbox" class="lightbox hidden">
     <button class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></button>
     <button class="lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>

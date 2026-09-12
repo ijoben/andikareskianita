@@ -3,8 +3,8 @@ function gE(id){return document.getElementById(id)}
 function toast(m,e){var t=gE('toast');t.textContent=m;t.className=e?'toast error':'toast';setTimeout(function(){t.className='toast hidden'},3000)}
 
 var THEME_PRESETS={
+  pink:{primaryColor:'#d4648a',primaryColorLight:'#f0a5c0',primaryColorDark:'#b84670',darkBg:'#2d1520',bodyBg:'#fff5f7',bodyText:'#333333'},
   gold:{primaryColor:'#d4af37',primaryColorLight:'#f0d78c',primaryColorDark:'#b8960c',darkBg:'#1a1a2e',bodyBg:'#faf7f2',bodyText:'#333333'},
-  rose:{primaryColor:'#c96b8b',primaryColorLight:'#e8a5bd',primaryColorDark:'#a94566',darkBg:'#2d1b24',bodyBg:'#fdf5f7',bodyText:'#333333'},
   royal:{primaryColor:'#4a6fa5',primaryColorLight:'#8aabcf',primaryColorDark:'#2d4a7a',darkBg:'#122240',bodyBg:'#f5f7fa',bodyText:'#333333'},
   sage:{primaryColor:'#7d9b76',primaryColorLight:'#b3ccad',primaryColorDark:'#5a7d52',darkBg:'#1a2a18',bodyBg:'#f7f9f6',bodyText:'#333333'},
   lavender:{primaryColor:'#9b7fb8',primaryColorLight:'#c5b0d8',primaryColorDark:'#7a5c99',darkBg:'#1e1530',bodyBg:'#f8f5fc',bodyText:'#333333'},
@@ -48,21 +48,15 @@ async function loadDash(){
   gE('stat-ragu').textContent=s.ragu;gE('stat-wishes').textContent=s.totalWishes;
 }
 
-// === COUPLE ===
 async function loadCouple(){
   var r=await fetch('/api/admin/data');ad=await r.json();var c=ad.couple;
-  gE('groom-name').value=c.groom.name||'';
-  gE('groom-full').value=c.groom.fullName||'';
-  gE('groom-father').value=c.groom.father||'';
-  gE('groom-mother').value=c.groom.mother||'';
+  gE('groom-name').value=c.groom.name||'';gE('groom-full').value=c.groom.fullName||'';
+  gE('groom-father').value=c.groom.father||'';gE('groom-mother').value=c.groom.mother||'';
   gE('groom-photo-current').textContent='Saat ini: '+(c.groom.photo||'Tidak ada');
-  gE('bride-name').value=c.bride.name||'';
-  gE('bride-full').value=c.bride.fullName||'';
-  gE('bride-father').value=c.bride.father||'';
-  gE('bride-mother').value=c.bride.mother||'';
+  gE('bride-name').value=c.bride.name||'';gE('bride-full').value=c.bride.fullName||'';
+  gE('bride-father').value=c.bride.father||'';gE('bride-mother').value=c.bride.mother||'';
   gE('bride-photo-current').textContent='Saat ini: '+(c.bride.photo||'Tidak ada');
-  gE('couple-quote').value=c.quote||'';
-  gE('couple-quote-source').value=c.quoteSource||'';
+  gE('couple-quote').value=c.quote||'';gE('couple-quote-source').value=c.quoteSource||'';
 }
 async function saveCouple(){
   try{
@@ -79,7 +73,6 @@ async function saveCouple(){
   }catch(e){toast('Gagal menyimpan',true)}
 }
 
-// === EVENTS ===
 async function loadEvents(){
   if(!ad){var r=await fetch('/api/admin/data');ad=await r.json()}
   var h='';ad.events.forEach(function(ev,i){
@@ -102,7 +95,6 @@ async function saveEvents(){
   if(r.ok)toast('Acara disimpan!');else toast('Gagal',true);
 }
 
-// === GALLERY ===
 async function loadGallery(){
   var r=await fetch('/api/gallery');var items=await r.json();
   gE('gallery-list').innerHTML=items.map(function(it){
@@ -117,7 +109,6 @@ async function uploadGallery(){
 }
 window.delGal=async function(id){if(!confirm('Hapus?'))return;var r=await fetch('/api/admin/gallery/'+id,{method:'DELETE'});if(r.ok){toast('Dihapus');loadGallery()}};
 
-// === STORIES ===
 async function loadStories(){
   var r=await fetch('/api/stories');var items=await r.json();
   gE('stories-list').innerHTML=items.map(function(s){
@@ -134,7 +125,6 @@ async function addStory(){
 }
 window.delStory=async function(id){if(!confirm('Hapus?'))return;var r=await fetch('/api/admin/stories/'+id,{method:'DELETE'});if(r.ok){toast('Dihapus');loadStories()}};
 
-// === MUSIC ===
 async function loadMusicInfo(){
   var r=await fetch('/api/admin/data');var d=await r.json();
   gE('music-current').textContent=d.music.filename?'Musik saat ini: '+d.music.originalName:'Belum ada musik latar';
@@ -150,25 +140,29 @@ async function uploadMusic(){
 async function loadTheme(){
   if(!ad){var r=await fetch('/api/admin/data');ad=await r.json()}
   var t=ad.theme||{};
-  // Set active preset
   document.querySelectorAll('.theme-preset').forEach(function(el){
-    el.classList.toggle('active',el.dataset.preset===(t.preset||'gold'));
+    el.classList.toggle('active',el.dataset.preset===(t.preset||'pink'));
   });
-  // Set color pickers
-  gE('theme-primary').value=t.primaryColor||'#d4af37';
-  gE('theme-primary-light').value=t.primaryColorLight||'#f0d78c';
-  gE('theme-primary-dark').value=t.primaryColorDark||'#b8960c';
-  gE('theme-dark-bg').value=t.darkBg||'#1a1a2e';
-  gE('theme-body-bg').value=t.bodyBg||'#faf7f2';
+  gE('theme-primary').value=t.primaryColor||'#d4648a';
+  gE('theme-primary-light').value=t.primaryColorLight||'#f0a5c0';
+  gE('theme-primary-dark').value=t.primaryColorDark||'#b84670';
+  gE('theme-dark-bg').value=t.darkBg||'#2d1520';
+  gE('theme-body-bg').value=t.bodyBg||'#fff5f7';
   gE('theme-body-text').value=t.bodyText||'#333333';
-  // Set background previews
+  // Main backgrounds
   setBgPreview('hero-bg-preview',t.heroBg);
   setBgPreview('open-bg-preview',t.openBg);
+  // Section backgrounds
+  setBgPreview('couple-bg-preview',t.coupleBg);
+  setBgPreview('story-bg-preview',t.storyBg);
+  setBgPreview('events-bg-preview',t.eventsBg);
+  setBgPreview('gallery-bg-preview',t.galleryBg);
+  setBgPreview('rsvp-bg-preview',t.rsvpBg);
 }
 function setBgPreview(id,url){
-  var el=gE(id);
+  var el=gE(id);if(!el)return;
   if(url){el.style.backgroundImage='url("'+url+'")';el.textContent='';}
-  else{el.style.backgroundImage='none';el.textContent='Belum ada gambar (menggunakan default)';}
+  else{el.style.backgroundImage='none';el.textContent='Default';}
 }
 window.applyPreset=function(name){
   var p=THEME_PRESETS[name];if(!p)return;
@@ -179,24 +173,18 @@ window.applyPreset=function(name){
   gE('theme-body-bg').value=p.bodyBg;
   gE('theme-body-text').value=p.bodyText;
   document.querySelectorAll('.theme-preset').forEach(function(el){el.classList.toggle('active',el.dataset.preset===name)});
-  // Auto save preset
   saveTheme(Object.assign({},p,{preset:name}));
 };
 window.saveThemeColors=function(){
   saveTheme({
-    preset:'',
-    primaryColor:gE('theme-primary').value,
-    primaryColorLight:gE('theme-primary-light').value,
-    primaryColorDark:gE('theme-primary-dark').value,
-    darkBg:gE('theme-dark-bg').value,
-    bodyBg:gE('theme-body-bg').value,
-    bodyText:gE('theme-body-text').value
+    preset:'',primaryColor:gE('theme-primary').value,primaryColorLight:gE('theme-primary-light').value,
+    primaryColorDark:gE('theme-primary-dark').value,darkBg:gE('theme-dark-bg').value,
+    bodyBg:gE('theme-body-bg').value,bodyText:gE('theme-body-text').value
   });
 };
 async function saveTheme(data){
   var r=await fetch('/api/admin/theme',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(r.ok){toast('Tema disimpan!');if(ad)ad.theme=Object.assign(ad.theme||{},data)}
-  else toast('Gagal menyimpan tema',true);
+  if(r.ok){toast('Tema disimpan!');if(ad)ad.theme=Object.assign(ad.theme||{},data)}else toast('Gagal menyimpan tema',true);
 }
 window.uploadThemeBg=function(field,inputId,previewId){
   var f=gE(inputId).files[0];if(!f)return toast('Pilih gambar',true);
@@ -211,7 +199,6 @@ window.removeThemeBg=function(field,previewId){
   setBgPreview(previewId,'');
 };
 
-// === RSVPs ===
 async function loadRSVPs(){
   var r=await fetch('/api/admin/rsvps');var items=await r.json();
   var lb={hadir:'Hadir',tidak_hadir:'Tidak Hadir',ragu:'Ragu'};
@@ -222,7 +209,6 @@ async function loadRSVPs(){
   }).join('');
 }
 
-// === WISHES ===
 async function loadWishesAdmin(){
   var r=await fetch('/api/wishes');var items=await r.json();
   gE('wishes-admin-list').innerHTML=items.length===0?'<p style="text-align:center;color:#999">Belum ada ucapan</p>':
@@ -232,7 +218,6 @@ async function loadWishesAdmin(){
 }
 window.delWish=async function(id){if(!confirm('Hapus?'))return;var r=await fetch('/api/admin/wishes/'+id,{method:'DELETE'});if(r.ok){toast('Dihapus');loadWishesAdmin()}};
 
-// === PASSWORD ===
 async function changePassword(){
   var op=gE('old-password').value,np=gE('new-password').value;
   if(!op||!np)return toast('Isi password',true);

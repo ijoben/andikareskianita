@@ -23,18 +23,20 @@ const DEFAULT_DATA = {
   ],
   music: { filename: "", originalName: "Background Music" },
   theme: {
-    preset: "gold",
-    primaryColor: "#d4af37",
-    primaryColorLight: "#f0d78c",
-    primaryColorDark: "#b8960c",
+    preset: "pink",
+    primaryColor: "#d4648a",
+    primaryColorLight: "#f0a5c0",
+    primaryColorDark: "#b84670",
     heroBg: "",
     openBg: "",
-    bodyBg: "#faf7f2",
-    sectionBg: "#ffffff",
-    darkBg: "#1a1a2e",
-    textOnDark: "#ffffff",
-    bodyText: "#333333",
-    sectionTitleStyle: "default"
+    coupleBg: "",
+    storyBg: "",
+    eventsBg: "",
+    galleryBg: "",
+    rsvpBg: "",
+    bodyBg: "#fff5f7",
+    darkBg: "#2d1520",
+    bodyText: "#333333"
   },
   admin: { username: "admin", passwordHash: null },
   rsvps: [], wishes: [],
@@ -48,7 +50,6 @@ function loadDB() {
     return JSON.parse(JSON.stringify(DEFAULT_DATA));
   }
   const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
-  // Ensure theme exists for older databases
   if (!data.theme) data.theme = JSON.parse(JSON.stringify(DEFAULT_DATA.theme));
   return data;
 }
