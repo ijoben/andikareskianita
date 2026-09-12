@@ -6,6 +6,15 @@ var weddingData = null;
 var invitationOpened = false;
 
 // ── Helpers ──────────────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 function formatDate(dateStr) {
   if (!dateStr) return '';
   var d = new Date(dateStr);
@@ -378,8 +387,8 @@ function renderRsvpList(rsvps) {
     var statusClass = r.attendance === 'hadir' ? 'attending' : (r.attendance === 'ragu' ? 'maybe' : 'absent');
     var statusIcon = r.attendance === 'hadir' ? '<i class="fas fa-check-circle"></i> Hadir' : (r.attendance === 'ragu' ? '<i class="fas fa-question-circle"></i> Mungkin' : '<i class="fas fa-times-circle"></i> Tidak Hadir');
     return '<div class="rsvp-card ' + statusClass + '">' +
-      '<div class="rsvp-avatar">' + (r.name || 'A').charAt(0) + '</div>' +
-      '<div class="rsvp-info"><div class="rsvp-name">' + (r.name || '') + '</div>' +
+      '<div class="rsvp-avatar">' + escapeHtml((r.name || 'A').charAt(0)) + '</div>' +
+      '<div class="rsvp-info"><div class="rsvp-name">' + escapeHtml(r.name || '') + '</div>' +
       '<div class="rsvp-status">' + statusIcon + '</div></div></div>';
   }).join('');
 }
@@ -413,9 +422,9 @@ function renderWishes(wishes) {
   if (!wishes.length) { container.innerHTML = '<p class="empty-text">Belum ada ucapan</p>'; return; }
   container.innerHTML = wishes.slice(0, 20).map(function(w) {
     return '<div class="wish-card">' +
-      '<div class="wish-avatar">' + (w.name || 'A').charAt(0) + '</div>' +
-      '<div class="wish-content"><div class="wish-name">' + (w.name || '') + '</div>' +
-      '<div class="wish-text">' + (w.message || '') + '</div>' +
+      '<div class="wish-avatar">' + escapeHtml((w.name || 'A').charAt(0)) + '</div>' +
+      '<div class="wish-content"><div class="wish-name">' + escapeHtml(w.name || '') + '</div>' +
+      '<div class="wish-text">' + escapeHtml(w.message || '') + '</div>' +
       '<div class="wish-time">' + (w.created_at ? new Date(w.created_at).toLocaleString('id-ID') : '') + '</div>' +
       '</div></div>';
   }).join('');
