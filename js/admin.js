@@ -465,6 +465,7 @@ function loadTheme() {
   if ($('theme-dark-bg')) $('theme-dark-bg').value = t.darkBg || '#2d1520';
   if ($('theme-body-bg')) $('theme-body-bg').value = t.bodyBg || '#fff5f7';
   if ($('theme-body-text')) $('theme-body-text').value = t.bodyText || '#333333';
+  if ($('theme-icon-color')) $('theme-icon-color').value = t.iconColor || '#c9a84c';
   // Update preset selection
   document.querySelectorAll('.theme-preset').forEach(function(p) {
     p.classList.toggle('active', p.getAttribute('data-preset') === t.preset);
@@ -507,6 +508,7 @@ async function saveThemeColors() {
   theme.darkBg = $('theme-dark-bg').value;
   theme.bodyBg = $('theme-body-bg').value;
   theme.bodyText = $('theme-body-text').value;
+  theme.iconColor = $('theme-icon-color') ? $('theme-icon-color').value : (theme.iconColor || '#c9a84c');
   try {
     await setConfig('theme', theme);
     adminData.theme = theme;
@@ -518,12 +520,12 @@ async function saveThemeColors() {
 
 async function applyThemePreset(preset) {
   var presets = {
-    pink: { primary: '#d4648a', light: '#f0a5c0', dark: '#b84670', darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333' },
-    gold: { primary: '#d4af37', light: '#f5e6c8', dark: '#b8960c', darkBg: '#1a1a2e', bodyBg: '#fff8f0', bodyText: '#333333' },
-    royal: { primary: '#4a6fa5', light: '#a8c5da', dark: '#2d4a7a', darkBg: '#0d1b2a', bodyBg: '#f0f4f8', bodyText: '#333333' },
-    sage: { primary: '#7d9b76', light: '#d4e2d0', dark: '#5a7d52', darkBg: '#1a2e1a', bodyBg: '#f5f8f4', bodyText: '#333333' },
-    lavender: { primary: '#9b7fb8', light: '#ddd0f0', dark: '#7a5c99', darkBg: '#1e1a2e', bodyBg: '#f8f5ff', bodyText: '#333333' },
-    sunset: { primary: '#e07c4f', light: '#f5d4b5', dark: '#c45a2c', darkBg: '#2e1a0d', bodyBg: '#fff8f0', bodyText: '#333333' }
+    pink: { primary: '#d4648a', light: '#f0a5c0', dark: '#b84670', darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333', iconColor: '#c9a84c' },
+    gold: { primary: '#d4af37', light: '#f5e6c8', dark: '#b8960c', darkBg: '#1a1a2e', bodyBg: '#fff8f0', bodyText: '#333333', iconColor: '#d4af37' },
+    royal: { primary: '#4a6fa5', light: '#a8c5da', dark: '#2d4a7a', darkBg: '#0d1b2a', bodyBg: '#f0f4f8', bodyText: '#333333', iconColor: '#c9a84c' },
+    sage: { primary: '#7d9b76', light: '#d4e2d0', dark: '#5a7d52', darkBg: '#1a2e1a', bodyBg: '#f5f8f4', bodyText: '#333333', iconColor: '#7d9b76' },
+    lavender: { primary: '#9b7fb8', light: '#ddd0f0', dark: '#7a5c99', darkBg: '#1e1a2e', bodyBg: '#f8f5ff', bodyText: '#333333', iconColor: '#c4973b' },
+    sunset: { primary: '#e07c4f', light: '#f5d4b5', dark: '#c45a2c', darkBg: '#2e1a0d', bodyBg: '#fff8f0', bodyText: '#333333', iconColor: '#e07c4f' }
   };
   var colors = presets[preset];
   if (!colors) return;
@@ -536,6 +538,7 @@ async function applyThemePreset(preset) {
   if ($('theme-dark-bg')) $('theme-dark-bg').value = colors.darkBg;
   if ($('theme-body-bg')) $('theme-body-bg').value = colors.bodyBg;
   if ($('theme-body-text')) $('theme-body-text').value = colors.bodyText;
+  if ($('theme-icon-color')) $('theme-icon-color').value = colors.iconColor;
   var theme = adminData.theme || {};
   theme.preset = preset;
   theme.primaryColor = colors.primary;
@@ -543,6 +546,8 @@ async function applyThemePreset(preset) {
   theme.primaryColorDark = colors.dark;
   theme.darkBg = colors.darkBg;
   theme.bodyBg = colors.bodyBg;
+  theme.bodyText = colors.bodyText;
+  theme.iconColor = colors.iconColor;
   theme.bodyText = colors.bodyText;
   try {
     await setConfig('theme', theme);

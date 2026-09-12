@@ -69,6 +69,10 @@ function applyTheme(theme) {
   if (theme.darkBg) r.style.setProperty('--dark-bg', theme.darkBg);
   if (theme.bodyBg) r.style.setProperty('--light-bg', theme.bodyBg);
   if (theme.bodyText) r.style.setProperty('--text', theme.bodyText);
+  if (theme.iconColor) {
+    r.style.setProperty('--gold', theme.iconColor);
+    r.style.setProperty('--icon-color', theme.iconColor);
+  }
   // Hero background
   var heroBgEl = document.querySelector('#hero .hero-bg');
   if (heroBgEl) {

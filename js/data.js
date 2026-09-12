@@ -24,6 +24,7 @@ var DEFAULT_DATA = {
     preset: 'pink',
     primaryColor: '#d4648a', primaryColorLight: '#f0a5c0', primaryColorDark: '#b84670',
     darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333',
+    iconColor: '#c9a84c',
     heroBg: '', openBg: '', coupleBg: '', storyBg: '', eventsBg: '', galleryBg: '', rsvpBg: '', qrisBg: '',
     heroBgOpacity: 30,
     openBgOpacity: 40,
