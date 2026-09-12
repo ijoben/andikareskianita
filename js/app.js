@@ -461,22 +461,6 @@ function createPetals() {
   }
 }
 
-// ── Particles ────────────────────────────────────────────────
-function createParticles() {
-  ['open-particles', 'hero-particles'].forEach(function(id) {
-    var container = $(id);
-    if (!container) return;
-    container.innerHTML = '';
-    for (var i = 0; i < 24; i++) {
-      var p = document.createElement('div');
-      p.className = 'particle';
-      var size = Math.random() * 3 + 1.5;
-      p.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + size + 'px;height:' + size + 'px;' +
-        'animation-delay:' + (Math.random() * 8) + 's;animation-duration:' + (Math.random() * 4 + 5) + 's;';
-      container.appendChild(p);
-    }
-  });
-}
 
 // ── Scroll reveal ────────────────────────────────────────────
 function initScrollReveal() {
@@ -561,7 +545,6 @@ function setupOpenButton() {
 async function init() {
   setupOpenButton();
   createPetals();
-  createParticles();
   initScrollReveal();
   initScrollBtn();
   initBottomNav();

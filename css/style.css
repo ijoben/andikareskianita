@@ -103,24 +103,7 @@ body {
   box-shadow: 0 8px 25px rgba(201,168,76,0.3);
 }
 
-/* ── Particles ───────────────────────── */
-.particles {
-  position: absolute; inset: 0; overflow: hidden;
-  pointer-events: none;
-}
-.particle {
-  position: absolute; bottom: -10px;
-  background: var(--gold);
-  border-radius: 50%;
-  opacity: 0;
-  animation: particleFloat linear infinite;
-}
-@keyframes particleFloat {
-  0% { opacity: 0; transform: translateY(0) translateX(0); }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.3; }
-  100% { opacity: 0; transform: translateY(-100vh) translateX(50px); }
-}
+
 
 /* ── Main Content ────────────────────── */
 .main-content {
