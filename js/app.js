@@ -199,35 +199,69 @@ function renderHero(data) {
     var d = new Date(activeEvent.date);
     heroDate.textContent = d.getDate() + ' \u2022 ' + (d.getMonth() + 1) + ' \u2022 ' + d.getFullYear();
   }
+  startCountdown();
 }
 
 // ── Countdown ────────────────────────────────────────────────
+var countdownInterval = null;
+
 function startCountdown() {
-  if (!weddingData) return;
-  var events = weddingData.events || [];
+  var data = weddingData || (typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : null);
+  if (!data) return;
+  var events = data.events || [];
   var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
   if (!activeEvent || !activeEvent.date) return;
-  var target = new Date(activeEvent.date + 'T' + (activeEvent.time || '08:00') + ':00').getTime();
+
+  var target;
+  try {
+    var dateParts = String(activeEvent.date).trim().split('-');
+    var timeStr = (activeEvent.time || '08:00').trim().split(' ')[0];
+    var timeParts = timeStr.split(':');
+    var y = parseInt(dateParts[0], 10);
+    var mo = parseInt(dateParts[1], 10) - 1;
+    var day = parseInt(dateParts[2], 10);
+    var h = parseInt(timeParts[0] || '8', 10);
+    var mi = parseInt(timeParts[1] || '0', 10);
+    target = new Date(y, mo, day, h, mi, 0).getTime();
+  } catch (err) {
+    target = new Date(activeEvent.date + 'T' + (activeEvent.time || '08:00') + ':00').getTime();
+  }
+
+  if (!target || isNaN(target)) return;
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+
   function update() {
     var now = Date.now();
     var diff = target - now;
+    var de = $('cd-days'), he = $('cd-hours'), me = $('cd-minutes'), se = $('cd-seconds');
     if (diff <= 0) {
-      var els = ['cd-days', 'cd-hours', 'cd-minutes', 'cd-seconds'];
-      els.forEach(function(id) { var el = $(id); if (el) el.textContent = '00'; });
+      if (de) de.textContent = '00';
+      if (he) he.textContent = '00';
+      if (me) me.textContent = '00';
+      if (se) se.textContent = '00';
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
       return;
     }
-    var d = Math.floor(diff / 86400000);
-    var h = Math.floor((diff % 86400000) / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    var de = $('cd-days'), he = $('cd-hours'), me = $('cd-minutes'), se = $('cd-seconds');
-    if (de) de.textContent = d < 10 ? '0' + d : d;
-    if (he) he.textContent = h < 10 ? '0' + h : h;
-    if (me) me.textContent = m < 10 ? '0' + m : m;
-    if (se) se.textContent = s < 10 ? '0' + s : s;
+    var d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    var h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var s = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (de) de.textContent = d < 10 ? '0' + d : String(d);
+    if (he) he.textContent = h < 10 ? '0' + h : String(h);
+    if (me) me.textContent = m < 10 ? '0' + m : String(m);
+    if (se) se.textContent = s < 10 ? '0' + s : String(s);
   }
+
   update();
-  setInterval(update, 1000);
+  countdownInterval = setInterval(update, 1000);
 }
 
 // ── Couple ───────────────────────────────────────────────────
@@ -290,6 +324,7 @@ function renderEvents(data) {
     html += '</div>';
     return html;
   }).join('');
+  startCountdown();
 }
 
 // ── Gallery ──────────────────────────────────────────────────
@@ -667,6 +702,7 @@ function setupOpenButton() {
 async function init() {
   setupOpenButton();
   initMusic(); // Initialize audio & toggle listener IMMEDIATELY so it's ready with zero delay
+  startCountdown(); // Start countdown timer immediately with fallback data so digits tick right away
   createPetals();
   initScrollReveal();
   initScrollBtn();
