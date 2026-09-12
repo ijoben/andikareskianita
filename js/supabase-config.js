@@ -13,12 +13,28 @@ var SB_HEADERS = {
   'Prefer': 'return=representation'
 };
 
+async function sbHandleError(r, op) {
+  var msg = 'Supabase ' + op + ' error (' + r.status + ')';
+  try {
+    var j = await r.json();
+    if (j && (j.message || j.error || j.hint || j.details)) {
+      msg += ': ' + (j.message || j.error || j.hint || j.details);
+    }
+  } catch(e) {
+    try {
+      var t = await r.text();
+      if (t) msg += ': ' + t;
+    } catch(e2) {}
+  }
+  return new Error(msg);
+}
+
 // Helper functions
 async function sbGet(table, query) {
   var url = SUPABASE_URL + '/rest/v1/' + table;
   if (query) url += '?' + query;
   var r = await fetch(url, { headers: SB_HEADERS });
-  if (!r.ok) throw new Error('Supabase GET error: ' + r.status);
+  if (!r.ok) throw await sbHandleError(r, 'GET ' + table);
   return r.json();
 }
 
@@ -28,8 +44,9 @@ async function sbPost(table, data) {
     headers: Object.assign({}, SB_HEADERS, { 'Prefer': 'return=representation' }),
     body: JSON.stringify(data)
   });
-  if (!r.ok) throw new Error('Supabase POST error: ' + r.status);
-  return r.json();
+  if (!r.ok) throw await sbHandleError(r, 'POST ' + table);
+  var text = await r.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function sbUpsert(table, data) {
@@ -38,8 +55,9 @@ async function sbUpsert(table, data) {
     headers: Object.assign({}, SB_HEADERS, { 'Prefer': 'resolution=merge-duplicates,return=representation' }),
     body: JSON.stringify(data)
   });
-  if (!r.ok) throw new Error('Supabase UPSERT error: ' + r.status);
-  return r.json();
+  if (!r.ok) throw await sbHandleError(r, 'UPSERT ' + table);
+  var text = await r.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function sbUpdate(table, data, filter) {
@@ -49,8 +67,9 @@ async function sbUpdate(table, data, filter) {
     headers: Object.assign({}, SB_HEADERS, { 'Prefer': 'return=representation' }),
     body: JSON.stringify(data)
   });
-  if (!r.ok) throw new Error('Supabase PATCH error: ' + r.status);
-  return r.json();
+  if (!r.ok) throw await sbHandleError(r, 'PATCH ' + table);
+  var text = await r.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function sbDelete(table, filter) {
@@ -59,5 +78,5 @@ async function sbDelete(table, filter) {
     method: 'DELETE',
     headers: SB_HEADERS
   });
-  if (!r.ok) throw new Error('Supabase DELETE error: ' + r.status);
+  if (!r.ok) throw await sbHandleError(r, 'DELETE ' + table);
 }

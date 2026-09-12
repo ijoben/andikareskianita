@@ -968,32 +968,45 @@ async function uploadOgImage() {
   }
   showLoading(true);
   try {
-    var dataUrl = await fileToBase64(fileInput.files[0]);
-    var og = adminData.og || {};
+    var dataUrl = await fileToBase64(fileInput.files[0], 800, 0.80);
+    var og = (adminData && adminData.og) ? adminData.og : {};
+    
+    // Sync text fields if filled
+    var titleInput = $('og-title-input');
+    var descInput = $('og-desc-input');
+    var urlInput = $('og-url-input');
+    if (titleInput && titleInput.value.trim()) og.title = titleInput.value.trim();
+    if (descInput && descInput.value.trim()) og.description = descInput.value.trim();
+    if (urlInput && urlInput.value.trim()) og.url = urlInput.value.trim();
+
     og.image = dataUrl;
     await setConfig('og', og);
     adminData.og = og;
     fileInput.value = '';
     updateLiveOgPreview();
     showLoading(false);
-    showToast('✅ Gambar thumbnail WhatsApp berhasil diupload!');
+    showToast('✅ Gambar thumbnail WhatsApp berhasil diupload & disimpan!');
   } catch (err) {
     showLoading(false);
-    showToast('❌ Error: ' + err.message);
+    var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal upload thumbnail');
+    console.error('uploadOgImage error:', err);
+    showToast('❌ Error: ' + errMsg);
   }
 }
 
 async function removeOgImage() {
   if (!confirm('Hapus gambar thumbnail custom dan gunakan gambar default hero?')) return;
   try {
-    var og = adminData.og || {};
+    var og = (adminData && adminData.og) ? adminData.og : {};
     og.image = '';
     await setConfig('og', og);
     adminData.og = og;
     updateLiveOgPreview();
     showToast('✅ Thumbnail custom dihapus (menggunakan default)!');
   } catch (err) {
-    showToast('❌ Error: ' + err.message);
+    var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal menghapus thumbnail');
+    console.error('removeOgImage error:', err);
+    showToast('❌ Error: ' + errMsg);
   }
 }
 
@@ -1002,7 +1015,7 @@ async function saveOgSettings() {
   var desc = $('og-desc-input') ? $('og-desc-input').value.trim() : '';
   var url = $('og-url-input') ? $('og-url-input').value.trim() : '';
 
-  var og = adminData.og || {};
+  var og = (adminData && adminData.og) ? adminData.og : {};
   og.title = title;
   og.description = desc;
   og.url = url;
@@ -1013,7 +1026,9 @@ async function saveOgSettings() {
     updateLiveOgPreview();
     showToast('✅ Pengaturan share WhatsApp / Sosial Media berhasil disimpan!');
   } catch (err) {
-    showToast('❌ Error: ' + err.message);
+    var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal menyimpan pengaturan');
+    console.error('saveOgSettings error:', err);
+    showToast('❌ Error: ' + errMsg);
   }
 }
 
@@ -1288,9 +1303,26 @@ document.addEventListener('DOMContentLoaded', function() {
   var ogTitleInput = $('og-title-input');
   var ogDescInput = $('og-desc-input');
   var ogUrlInput = $('og-url-input');
+  var ogFileInput = $('og-image-file');
   if (ogTitleInput) ogTitleInput.addEventListener('input', updateLiveOgPreview);
   if (ogDescInput) ogDescInput.addEventListener('input', updateLiveOgPreview);
   if (ogUrlInput) ogUrlInput.addEventListener('input', updateLiveOgPreview);
+  if (ogFileInput) {
+    ogFileInput.addEventListener('change', function() {
+      if (ogFileInput.files && ogFileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var prevThumb = $('og-preview-thumb');
+          var placeholder = $('og-thumb-placeholder');
+          if (prevThumb) {
+            prevThumb.style.backgroundImage = 'url(\'' + e.target.result + '\')';
+            if (placeholder) placeholder.style.display = 'none';
+          }
+        };
+        reader.readAsDataURL(ogFileInput.files[0]);
+      }
+    });
+  }
 
   // Settings (Export & Import)
   var btnExport = $('btn-export');
