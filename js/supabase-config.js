@@ -3,7 +3,7 @@
 // Dashboard > Settings > API > URL & anon/public key
 
 var SUPABASE_URL = 'https://hlsyjaszrzjdxxecxlrx.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_PZloOsZa-Tcz0G9py9YEiw_obbS2-NM';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3lqYXN6cnpqZHh4ZWN4bHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMTcwMjEsImV4cCI6MjEwNDc5MzAyMX0.lsxaNfs_RVxf9pxpcO7X2lXeEyKhjG6GMBV7ls0EDus';
 
 // Jangan edit di bawah ini
 var SB_HEADERS = {
