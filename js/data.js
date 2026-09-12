@@ -30,7 +30,7 @@ var DEFAULT_DATA = {
 // Get config value from Supabase
 async function getConfig(key) {
   try {
-    var data = await sbGet('config', 'eq.' + key + '&select=value');
+    var data = await sbGet('config', 'key=eq.' + encodeURIComponent(key) + '&select=value');
     return data.length > 0 ? data[0].value : null;
   } catch (e) { console.error('getConfig error:', key, e); return null; }
 }

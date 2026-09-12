@@ -490,10 +490,10 @@ function loadRsvps() {
   }).join('');
 }
 
-async function deleteRsvp(id) {
+async function deleteRsvpAdmin(id) {
   if (!confirm('Hapus RSVP ini?')) return;
   try {
-    await deleteRsvp(id);
+    await sbDelete('rsvps', 'id=eq.' + id);
     adminData.rsvps = adminData.rsvps.filter(function(r) { return r.id !== id; });
     loadRsvps();
     showToast('\u2705 RSVP dihapus!');
