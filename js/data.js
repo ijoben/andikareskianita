@@ -15,10 +15,10 @@ var DEFAULT_DATA = {
   stories: [
     { id: 1, title: 'Pertama Bertemu', date: '2020-01-15', description: 'Kami pertama kali bertemu di kampus.', photo: '' },
     { id: 2, title: 'Makin Dekat', date: '2020-06-20', description: 'Kami mulai sering menghabiskan waktu bersama.', photo: '' },
-    { id: 3, title: 'Lamaran', date: '2025-12-25', description: 'Ahmad melamar Fatimah.', photo: '' }
+    { id: 3, title: 'Lamaran', date: '2025-12-25', description: 'Andika melamar Rezki.', photo: '' }
   ],
   gallery: [],
-  music: { dataUrl: '', name: '' },
+  music: { dataUrl: 'assets/audio/music.mp3', name: 'Romantic-Day-chosic.com_.mp3' },
   theme: {
     preset: 'pink',
     primaryColor: '#d4648a', primaryColorLight: '#f0a5c0', primaryColorDark: '#b84670',

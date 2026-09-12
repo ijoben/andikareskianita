@@ -3,6 +3,7 @@
    ============================================================ */
 
 var weddingData = null;
+var invitationOpened = false;
 
 // ── Helpers ──────────────────────────────────────────────────
 function formatDate(dateStr) {
@@ -159,6 +160,9 @@ function renderOverlay(data) {
 
 // ── Open invitation ──────────────────────────────────────────
 function openInvitation() {
+  if (invitationOpened) return;
+  invitationOpened = true;
+
   var overlay = $('open-overlay');
   var content = $('main-content');
   if (overlay) {
@@ -174,20 +178,9 @@ function openInvitation() {
     startCountdown();
     window.scrollTo(0, 0);
   }
+
   // Auto-play music softly on open invitation
-  var audio = $('bg-music');
-  var btn = $('music-toggle');
-  if (audio && audio.src) {
-    audio.volume = 0.25; // Gentle and soft volume
-    audio.play().then(function() {
-      if (btn) {
-        btn.innerHTML = '<i class="fas fa-music"></i>';
-        btn.style.opacity = '1';
-      }
-    }).catch(function(e) {
-      console.warn('Autoplay error:', e);
-    });
-  }
+  playMusicSoftly();
 }
 
 // ── Hero ─────────────────────────────────────────────────────
@@ -409,30 +402,86 @@ async function submitWish(e) {
 }
 
 // ── Music ────────────────────────────────────────────────────
+function playMusicSoftly() {
+  var audio = $('bg-music');
+  var btn = $('music-toggle');
+  if (!audio) return;
+  audio.volume = 0.25; // Gentle and soft volume (0.25)
+  var p = audio.play();
+  if (p !== undefined) {
+    p.then(function() {
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-music"></i>';
+        btn.style.opacity = '1';
+        btn.classList.add('playing');
+      }
+    }).catch(function(err) {
+      console.warn('Audio auto-play prevented by browser policy:', err);
+      // Fallback: If autoplay was blocked by browser, play as soon as guest interacts with document
+      function resumeAudio() {
+        if (invitationOpened && audio.paused) {
+          audio.volume = 0.25;
+          audio.play().then(function() {
+            if (btn) {
+              btn.innerHTML = '<i class="fas fa-music"></i>';
+              btn.style.opacity = '1';
+              btn.classList.add('playing');
+            }
+          }).catch(function() {});
+        }
+        document.removeEventListener('click', resumeAudio);
+        document.removeEventListener('touchstart', resumeAudio);
+      }
+      document.addEventListener('click', resumeAudio, { once: true });
+      document.addEventListener('touchstart', resumeAudio, { once: true });
+    });
+  }
+}
+
 function initMusic() {
   var audio = $('bg-music');
   if (!audio) {
     audio = document.createElement('audio');
     audio.id = 'bg-music';
     audio.loop = true;
+    audio.preload = 'auto';
+    audio.src = 'assets/audio/music.mp3';
     document.body.appendChild(audio);
+  } else if (!audio.src || audio.src === '') {
+    audio.src = 'assets/audio/music.mp3';
   }
+
   var btn = $('music-toggle');
   var music = (weddingData && weddingData.music) || {};
-  if (music.dataUrl) audio.src = music.dataUrl;
+  if (music.dataUrl && music.dataUrl !== '' && !audio.src.endsWith(music.dataUrl)) {
+    var isPlaying = !audio.paused;
+    audio.src = music.dataUrl;
+    if (isPlaying || invitationOpened) {
+      audio.volume = 0.25;
+      audio.play().catch(function() {});
+    }
+  }
   audio.volume = 0.25; // Gentle & soft volume
+
+  // If envelope is already opened, ensure music starts playing
+  if (invitationOpened && audio.paused) {
+    playMusicSoftly();
+  }
 
   if (btn) {
     btn.onclick = function() {
       if (audio.paused) {
+        audio.volume = 0.25;
         audio.play().then(function() {
           btn.innerHTML = '<i class="fas fa-music"></i>';
           btn.style.opacity = '1';
+          btn.classList.add('playing');
         }).catch(function(e) { console.warn('Music play error:', e); });
       } else {
         audio.pause();
         btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
         btn.style.opacity = '0.6';
+        btn.classList.remove('playing');
       }
     };
   }
@@ -603,17 +652,21 @@ function copyQrisNote() {
 function setupOpenButton() {
   var openBtn = $('open-btn');
   if (openBtn) {
-    openBtn.addEventListener('click', openInvitation);
-    openBtn.addEventListener('touchstart', function(e) {
-      // Fast touch reaction
+    openBtn.addEventListener('click', function(e) {
+      e.preventDefault();
       openInvitation();
-    }, { passive: true });
+    });
+    openBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      openInvitation();
+    });
   }
 }
 
 // ── Init ─────────────────────────────────────────────────────
 async function init() {
   setupOpenButton();
+  initMusic(); // Initialize audio & toggle listener IMMEDIATELY so it's ready with zero delay
   createPetals();
   initScrollReveal();
   initScrollBtn();
@@ -630,12 +683,13 @@ async function init() {
     renderEvents(weddingData);
     renderGallery(weddingData);
     renderQRIS(weddingData);
+    initMusic(); // Re-sync in case custom music data was loaded from Supabase
+
     // Load RSVP and Wishes from separate tables
     var rsvps = await getRsvps();
     renderRsvpList(rsvps);
     var wishes = await getWishes();
     renderWishes(wishes);
-    initMusic();
 
     // Event listeners
     var rsvpForm = $('rsvp-form');

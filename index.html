@@ -135,8 +135,8 @@
           <div class="qris-image" id="qris-image">
             <span class="qris-placeholder">QRIS belum diupload</span>
           </div>
-          <p class="qris-name" id="qris-name">a.n. Ahmad Rizki Pratama</p>
-          <p class="qris-text" id="qris-note">Terima kasih atas kado &amp; ucapan Anda</p>
+          <p class="qris-name" id="qris-name">a.n. Muhammad Andik / Rezkianita</p>
+          <p class="qris-text" id="qris-note">Terima kasih atas doa restu &amp; kado Anda</p>
           <div id="qris-copy-wrapper" class="qris-copy-wrapper" style="display:none; margin-top: 15px;">
             <button id="qris-copy-btn" class="qris-copy-btn" onclick="copyQrisNote()"><i class="far fa-copy"></i> Salin Info Rekening</button>
           </div>
@@ -153,6 +153,11 @@
       </div>
     </footer>
   </div>
+
+  <!-- Floating Music Toggle Button -->
+  <button id="music-toggle" class="floating-music-btn" aria-label="Toggle Musik" title="Musik Latar">
+    <i class="fas fa-music"></i>
+  </button>
 
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bottom-nav-inner">
@@ -172,7 +177,7 @@
     <p id="lightbox-caption" class="lightbox-caption"></p>
   </div>
 
-  <audio id="bg-music" loop preload="auto"></audio>
+  <audio id="bg-music" src="assets/audio/music.mp3" loop preload="auto"></audio>
   <script src="js/supabase-config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
