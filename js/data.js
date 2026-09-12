@@ -35,8 +35,8 @@ var DEFAULT_DATA = {
   },
   qris: {
     image: '',
-    name: 'a.n. Ahmad Rizki Pratama',
-    note: 'Terima kasih atas kado & ucapan Anda'
+    name: 'a.n. Muhammad Andik / Rezkianita',
+    note: 'Terima kasih atas doa restu dan tanda kasih Anda'
   },
   opening: {
     title: 'Kepada Yth. Bapak/Ibu/Saudara/i',
