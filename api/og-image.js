@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
       return res.redirect(302, ogImage);
     }
 
-    // 4. Default fallback: serve local high-quality thumbnail image
+    // 4. Default fallback: serve local file or redirect to static asset
     const fallbackPath = path.join(process.cwd(), 'assets', 'images', 'og-thumbnail.jpg');
     if (fs.existsSync(fallbackPath)) {
       const buffer = fs.readFileSync(fallbackPath);
@@ -50,7 +50,9 @@ module.exports = async (req, res) => {
       return res.status(200).send(buffer);
     }
 
-    return res.status(404).send('Image not found');
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'andika-rezkianita.vercel.app';
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    return res.redirect(302, `${proto}://${host}/assets/images/og-thumbnail.jpg`);
   } catch (err) {
     console.error('og-image error:', err);
     res.status(500).send('Internal Server Error');

@@ -984,58 +984,12 @@ function updateLiveOgPreview() {
 }
 
 async function uploadOgImage() {
-  var fileInput = $('og-image-file');
-  var imgUrlInput = $('og-image-url-input');
-  
-  var file = fileInput && fileInput.files && fileInput.files[0];
-  var manualUrl = imgUrlInput ? imgUrlInput.value.trim() : '';
-
-  if (!file && (!manualUrl || manualUrl.startsWith('Custom Image'))) {
-    showToast('⚠️ Pilih file gambar atau ketik URL gambar terlebih dahulu');
-    return;
-  }
-
-  showLoading(true);
-  try {
-    var dataUrl = '';
-    if (file) {
-      dataUrl = await fileToBase64(file, 800, 0.75);
-    } else {
-      dataUrl = manualUrl;
-    }
-
-    var og = (adminData && adminData.og) ? adminData.og : {};
-    
-    // Sync text fields if filled
-    var titleInput = $('og-title-input');
-    var descInput = $('og-desc-input');
-    var urlInput = $('og-url-input');
-    if (titleInput && titleInput.value.trim()) og.title = titleInput.value.trim();
-    if (descInput && descInput.value.trim()) og.description = descInput.value.trim();
-    if (urlInput && urlInput.value.trim()) og.url = urlInput.value.trim();
-
-    og.image = dataUrl;
-    await setConfig('og', og);
-    adminData.og = og;
-    
-    if (fileInput) fileInput.value = '';
-    if (imgUrlInput) {
-      imgUrlInput.value = dataUrl.startsWith('data:') ? 'Custom Image (Terpasang)' : dataUrl;
-    }
-    
-    updateLiveOgPreview();
-    showLoading(false);
-    showToast('✅ Gambar thumbnail WhatsApp berhasil disimpan!');
-  } catch (err) {
-    showLoading(false);
-    var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal upload thumbnail');
-    console.error('uploadOgImage error:', err);
-    showToast('❌ Error: ' + errMsg);
-  }
+  await saveOgSettings();
 }
 
 async function removeOgImage() {
-  if (!confirm('Hapus gambar thumbnail custom dan gunakan gambar default hero?')) return;
+  if (!confirm('Hapus gambar thumbnail custom dan gunakan gambar default cover?')) return;
+  showLoading(true);
   try {
     var og = (adminData && adminData.og) ? adminData.og : {};
     og.image = '';
@@ -1044,10 +998,14 @@ async function removeOgImage() {
     
     var imgUrlInput = $('og-image-url-input');
     if (imgUrlInput) imgUrlInput.value = '';
+    var fileInput = $('og-image-file');
+    if (fileInput) fileInput.value = '';
 
     updateLiveOgPreview();
-    showToast('✅ Thumbnail custom dihapus (menggunakan default)!');
+    showLoading(false);
+    showToast('✅ Thumbnail custom dihapus (menggunakan default cover)!');
   } catch (err) {
+    showLoading(false);
     var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal menghapus thumbnail');
     console.error('removeOgImage error:', err);
     showToast('❌ Error: ' + errMsg);
@@ -1059,21 +1017,34 @@ async function saveOgSettings() {
   var desc = $('og-desc-input') ? $('og-desc-input').value.trim() : '';
   var url = $('og-url-input') ? $('og-url-input').value.trim() : '';
   var imgUrl = $('og-image-url-input') ? $('og-image-url-input').value.trim() : '';
+  var fileInput = $('og-image-file');
 
-  var og = (adminData && adminData.og) ? adminData.og : {};
-  og.title = title;
-  og.description = desc;
-  og.url = url;
-  if (imgUrl && !imgUrl.startsWith('Custom Image')) {
-    og.image = imgUrl;
-  }
-
+  showLoading(true);
   try {
+    var og = (adminData && adminData.og) ? adminData.og : {};
+    og.title = title;
+    og.description = desc;
+    og.url = url;
+
+    // Check if user selected a file to upload
+    if (fileInput && fileInput.files && fileInput.files.length) {
+      var dataUrl = await fileToBase64(fileInput.files[0], 800, 0.75);
+      og.image = dataUrl;
+      fileInput.value = '';
+      if ($('og-image-url-input')) {
+        $('og-image-url-input').value = 'Custom Image (Terpasang)';
+      }
+    } else if (imgUrl && !imgUrl.startsWith('Custom Image')) {
+      og.image = imgUrl;
+    }
+
     await setConfig('og', og);
     adminData.og = og;
     updateLiveOgPreview();
+    showLoading(false);
     showToast('✅ Pengaturan share WhatsApp / Sosial Media berhasil disimpan!');
   } catch (err) {
+    showLoading(false);
     var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal menyimpan pengaturan');
     console.error('saveOgSettings error:', err);
     showToast('❌ Error: ' + errMsg);
