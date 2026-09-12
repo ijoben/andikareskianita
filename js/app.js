@@ -2,6 +2,13 @@
    Wedding Invitation Landing Page — Supabase Edition
    ============================================================ */
 
+// Clean .html from address bar
+if (window.history && window.history.replaceState && window.location.pathname.endsWith('.html')) {
+  var cleanAppPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanAppPath === '/index') cleanAppPath = '/';
+  window.history.replaceState(null, '', cleanAppPath + window.location.search + window.location.hash);
+}
+
 var weddingData = null;
 var invitationOpened = false;
 
@@ -168,25 +175,31 @@ function renderOverlay(data) {
 }
 
 // ── Open invitation ──────────────────────────────────────────
-function openInvitation() {
-  if (invitationOpened) return;
+function openInvitation(instant) {
+  if (invitationOpened && !instant) return;
   invitationOpened = true;
+  try { sessionStorage.setItem('invitation_opened', '1'); } catch (e) {}
 
   var overlay = $('open-overlay');
   var content = $('main-content');
   if (overlay) {
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    setTimeout(function() {
+    if (instant) {
       overlay.style.display = 'none';
-    }, 800);
+      overlay.style.pointerEvents = 'none';
+    } else {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      setTimeout(function() {
+        overlay.style.display = 'none';
+      }, 800);
+    }
   }
   if (content) {
     content.classList.remove('hidden');
     content.classList.add('visible');
     startCountdown();
     initScrollReveal();
-    window.scrollTo(0, 0);
+    if (!instant) window.scrollTo(0, 0);
   }
 
   // Auto-play music softly on open invitation
@@ -776,6 +789,13 @@ async function init() {
   initScrollReveal();
   initScrollBtn();
   initBottomNav();
+
+  // If user previously opened invitation in this session, keep it open on refresh
+  try {
+    if (sessionStorage.getItem('invitation_opened') === '1') {
+      openInvitation(true);
+    }
+  } catch (e) {}
 
   // 1. Render immediately using DEFAULT_DATA so NO section is ever blank while loading
   if (typeof DEFAULT_DATA !== 'undefined') {

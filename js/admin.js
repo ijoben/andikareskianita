@@ -2,6 +2,12 @@
    Wedding Invitation Admin Panel — Supabase Edition
    ============================================================ */
 
+// Clean .html from address bar
+if (window.history && window.history.replaceState && window.location.pathname.endsWith('.html')) {
+  var cleanAdminPath = window.location.pathname.replace(/\.html$/, '');
+  window.history.replaceState(null, '', cleanAdminPath + window.location.search + window.location.hash);
+}
+
 var adminData = (typeof DEFAULT_DATA !== 'undefined') ? JSON.parse(JSON.stringify(DEFAULT_DATA)) : {};
 adminData.rsvps = [];
 adminData.wishes = [];
@@ -49,7 +55,10 @@ async function loadAll() {
 }
 
 // ── Navigation ───────────────────────────────────────────────
-function showPage(page) {
+var VALID_ADMIN_PAGES = ['dashboard', 'opening', 'couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'rsvps', 'wishes', 'settings'];
+
+function showPage(page, updateHash) {
+  if (VALID_ADMIN_PAGES.indexOf(page) === -1) page = 'dashboard';
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(i) { i.classList.remove('active'); });
   var pageEl = $('page-' + page);
@@ -58,6 +67,19 @@ function showPage(page) {
   if (navEl) navEl.classList.add('active');
   // Auto-close sidebar on mobile
   closeSidebar();
+
+  // Persist current page so page refresh stays on current tab
+  try {
+    sessionStorage.setItem('admin_active_page', page);
+    if (updateHash !== false) {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#' + page);
+      } else {
+        window.location.hash = page;
+      }
+    }
+  } catch (e) {}
+
   // Load page data
   switch (page) {
     case 'dashboard': loadDashboard(); break;
@@ -985,14 +1007,23 @@ document.addEventListener('DOMContentLoaded', function() {
   var btnReset = $('btn-reset');
   if (btnReset) btnReset.addEventListener('click', resetAllData);
 
-  // 2. Render initial view immediately
-  showPage('dashboard');
+  // 2. Render initial view based on current hash or saved tab so refresh never resets to dashboard
+  var initialPage = (window.location.hash ? window.location.hash.replace('#', '') : '') || sessionStorage.getItem('admin_active_page') || 'dashboard';
+  if (VALID_ADMIN_PAGES.indexOf(initialPage) === -1) initialPage = 'dashboard';
+  showPage(initialPage, false);
+
+  window.addEventListener('hashchange', function() {
+    var h = window.location.hash.replace('#', '');
+    if (h && VALID_ADMIN_PAGES.indexOf(h) !== -1) {
+      showPage(h, false);
+    }
+  });
 
   // 3. Fetch latest data from database asynchronously in background
   loadAll().then(function() {
     var activeItem = document.querySelector('.nav-item.active');
-    var activePage = activeItem ? activeItem.getAttribute('data-page') : 'dashboard';
-    showPage(activePage);
+    var activePage = activeItem ? activeItem.getAttribute('data-page') : initialPage;
+    showPage(activePage, false);
   }).catch(function(err) {
     console.warn('loadAll background error:', err);
   });

@@ -168,30 +168,35 @@ body {
   color: var(--gold);
 }
 
-/* ── Music Toggle ────────────────────── */
-.music-toggle {
-  position: fixed; top: 20px; right: 20px; z-index: 500;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(45,21,32,0.8); color: var(--gold);
-  border: 1px solid var(--gold);
-  font-size: 18px; cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-.music-toggle:hover { background: var(--gold); color: var(--dark-bg); }
-
 /* ── Scroll Button ───────────────────── */
 .scroll-down-btn {
-  position: fixed; bottom: 80px; right: 20px; z-index: 500;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(45,21,32,0.8); color: var(--gold);
-  border: 1px solid var(--gold);
-  font-size: 18px; cursor: pointer;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 950;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(45, 21, 32, 0.85);
+  color: var(--gold, #c9a84c);
+  border: 1.5px solid rgba(201, 168, 76, 0.45);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.scroll-down-btn.hidden { display: none; }
-.scroll-down-btn:hover { background: var(--gold); color: var(--dark-bg); }
+.scroll-down-btn.hidden { display: none !important; }
+.scroll-down-btn:hover {
+  background: rgba(45, 21, 32, 0.95);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
 
 /* ── Sections ────────────────────────── */
 .section {
@@ -653,10 +658,11 @@ body {
 /* ── Floating Music Toggle Button ───────── */
 .floating-music-btn {
   position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 45px;
-  height: 45px;
+  bottom: 25px;
+  left: 25px;
+  right: auto;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: rgba(45, 21, 32, 0.85);
   backdrop-filter: blur(8px);
@@ -673,7 +679,7 @@ body {
   transition: all 0.3s ease;
 }
 .floating-music-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   background: rgba(45, 21, 32, 0.95);
   border-color: var(--gold, #c9a84c);
   box-shadow: 0 6px 20px rgba(0,0,0,0.35);
@@ -867,15 +873,30 @@ body {
     backdrop-filter: none !important;
     background: rgba(35, 15, 25, 0.97) !important;
   }
-  .music-toggle, .scroll-down-btn {
+  .floating-music-btn {
+    bottom: 72px;
+    left: 16px;
+    right: auto;
+    width: 42px;
+    height: 42px;
+    font-size: 15px;
     backdrop-filter: none !important;
-    background: rgba(45, 21, 32, 0.92) !important;
+    background: rgba(45, 21, 32, 0.94) !important;
+  }
+  .scroll-down-btn {
+    bottom: 72px;
+    right: 16px;
+    left: auto;
+    width: 42px;
+    height: 42px;
+    font-size: 15px;
+    backdrop-filter: none !important;
+    background: rgba(45, 21, 32, 0.94) !important;
   }
   .countdown-item {
     backdrop-filter: none !important;
     background: rgba(255, 255, 255, 0.08) !important;
   }
-  .scroll-down-btn { bottom: 70px; }
   .toast { bottom: 70px; }
   .section { padding: 50px 15px; }
   .events-grid { grid-template-columns: 1fr; gap: 20px; }
