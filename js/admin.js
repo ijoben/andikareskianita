@@ -899,6 +899,8 @@ async function deleteWishById(id) {
   } catch (err) {
     showToast('\u274C Error: ' + err.message);
   }
+}
+
 // ── Settings & Open Graph (WhatsApp Share) ────────────────────
 function loadSettings() {
   var og = (adminData && adminData.og) || (typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA.og : {}) || {};
