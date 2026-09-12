@@ -2,8 +2,8 @@
 // Ganti URL dan KEY ini dengan milik kamu dari Supabase Dashboard
 // Dashboard > Settings > API > URL & anon/public key
 
-var SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+var SUPABASE_URL = 'https://hlsyjaszrzjdxxecxlrx.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_PZloOsZa-Tcz0G9py9YEiw_obbS2-NM';
 
 // Jangan edit di bawah ini
 var SB_HEADERS = {
