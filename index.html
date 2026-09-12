@@ -167,19 +167,23 @@
       <div class="section-ornament"><i class="fas fa-gift"></i></div>
       <div class="container">
         <h2 class="section-title reveal">Kirim Hadiah &amp; Angpao</h2>
-        <p class="section-subtitle reveal" style="color: rgba(255,255,255,0.7); max-width: 500px; margin: 0 auto 30px;">Doa restu Anda merupakan karunia terindah bagi kami. Namun jika Anda ingin memberikan tanda kasih secara digital, Anda dapat menggunakan QRIS berikut.</p>
+        <p class="section-subtitle reveal" style="color: rgba(255,255,255,0.7); max-width: 500px; margin: 0 auto 30px;">Doa restu Anda merupakan karunia terindah bagi kami. Namun jika Anda ingin memberikan tanda kasih secara digital, Anda dapat menggunakan rekening atau QRIS berikut.</p>
         <div class="qris-wrapper reveal">
-          <div class="qris-card-header">
-            <i class="fas fa-qrcode"></i>
-            <span>QRIS / Kado Digital</span>
+          <div class="qris-card-header" id="qris-card-header">
+            <i class="fas fa-gift" id="qris-card-header-icon"></i>
+            <span id="qris-card-header-text">Kado Digital / Angpao</span>
           </div>
-          <div class="qris-image" id="qris-image">
-            <span class="qris-placeholder">QRIS belum diupload</span>
+          <div id="qris-image-container">
+            <div class="qris-image" id="qris-image">
+              <span class="qris-placeholder">QRIS belum diupload</span>
+            </div>
           </div>
-          <p class="qris-name" id="qris-name">a.n. Muhammad Andik / Rezkianita</p>
-          <p class="qris-text" id="qris-note">Terima kasih atas doa restu &amp; kado Anda</p>
-          <div id="qris-copy-wrapper" class="qris-copy-wrapper" style="display:none; margin-top: 15px;">
-            <button id="qris-copy-btn" class="qris-copy-btn" onclick="copyQrisNote()"><i class="far fa-copy"></i> Salin Info Rekening</button>
+          <div id="qris-rekening-container">
+            <p class="qris-name" id="qris-name">a.n. Muhammad Andik / Rezkianita</p>
+            <p class="qris-text" id="qris-note">Terima kasih atas doa restu &amp; kado Anda</p>
+            <div id="qris-copy-wrapper" class="qris-copy-wrapper" style="display:none; margin-top: 15px;">
+              <button id="qris-copy-btn" class="qris-copy-btn" onclick="copyQrisNote()"><i class="far fa-copy"></i> Salin Info Rekening</button>
+            </div>
           </div>
         </div>
       </div>

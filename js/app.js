@@ -858,32 +858,71 @@ function renderQRIS(data) {
   var qris = (data && data.qris) || {};
   var qrisSection = $('qris');
 
-  // Handle ON / OFF Toggle for QRIS section
-  if (qris.enabled === false) {
+  var isMasterEnabled = qris.enabled !== false;
+  var isQrisEnabled = isMasterEnabled && (qris.qrisEnabled !== false);
+  var isRekeningEnabled = isMasterEnabled && (qris.rekeningEnabled !== false);
+
+  // If both features are turned off, hide the entire section
+  if (!isQrisEnabled && !isRekeningEnabled) {
     if (qrisSection) qrisSection.style.display = 'none';
     return;
-  } else {
-    if (qrisSection) qrisSection.style.display = '';
   }
+  if (qrisSection) qrisSection.style.display = '';
 
+  var imgContainer = $('qris-image-container');
+  var rekContainer = $('qris-rekening-container');
   var imgEl = $('qris-image');
   var nameEl = $('qris-name');
   var noteEl = $('qris-note');
   var copyWrap = $('qris-copy-wrapper');
-  if (imgEl) {
+  var headerText = $('qris-card-header-text');
+  var headerIcon = $('qris-card-header-icon');
+
+  // Handle QRIS Code Image
+  if (imgContainer) {
+    imgContainer.style.display = isQrisEnabled ? 'block' : 'none';
+  }
+  if (isQrisEnabled && imgEl) {
     if (qris.image) {
       imgEl.innerHTML = '<img src="' + qris.image + '" alt="QRIS Code">';
     } else {
       imgEl.innerHTML = '<span class="qris-placeholder"><i class="fas fa-qrcode" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4;"></i>QRIS belum diupload</span>';
     }
   }
-  if (nameEl) nameEl.textContent = qris.name || 'a.n. Mempelai';
-  if (noteEl) noteEl.textContent = qris.note || 'Terima kasih atas doa restu & kado Anda';
-  if (copyWrap) {
-    if (qris.note && qris.note.trim().length > 0) {
-      copyWrap.style.display = 'block';
+
+  // Handle Rekening Info & Copy Button
+  if (rekContainer) {
+    rekContainer.style.display = isRekeningEnabled ? 'block' : 'none';
+  }
+  if (isRekeningEnabled) {
+    if (nameEl) nameEl.textContent = qris.name || 'a.n. Mempelai';
+    if (noteEl) noteEl.textContent = qris.note || 'Terima kasih atas doa restu & kado Anda';
+    if (copyWrap) {
+      if (qris.note && qris.note.trim().length > 0) {
+        copyWrap.style.display = 'block';
+      } else {
+        copyWrap.style.display = 'none';
+      }
+    }
+  }
+
+  // Update card header text & icon dynamically
+  if (headerText) {
+    if (isQrisEnabled && isRekeningEnabled) {
+      headerText.textContent = 'QRIS & Transfer Rekening';
+    } else if (isQrisEnabled) {
+      headerText.textContent = 'QRIS / Kado Digital';
     } else {
-      copyWrap.style.display = 'none';
+      headerText.textContent = 'Transfer Rekening / E-Wallet';
+    }
+  }
+  if (headerIcon) {
+    if (isQrisEnabled && !isRekeningEnabled) {
+      headerIcon.className = 'fas fa-qrcode';
+    } else if (!isQrisEnabled && isRekeningEnabled) {
+      headerIcon.className = 'fas fa-credit-card';
+    } else {
+      headerIcon.className = 'fas fa-gift';
     }
   }
 }

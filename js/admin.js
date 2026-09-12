@@ -628,26 +628,49 @@ function closeSidebar() {
   if (bd) bd.classList.remove('active');
 }
 
-// ── QRIS ─────────────────────────────────────────────────────
+// ── QRIS & Rekening ───────────────────────────────────────────
 function loadQris() {
   var qris = adminData.qris || {};
-  var isEnabled = qris.enabled !== false;
-  var toggle = $('qris-enabled-toggle');
-  var badge = $('qris-status-badge');
-  var icon = $('qris-toggle-icon');
-  var container = $('qris-toggle-container');
+  var isMasterEnabled = qris.enabled !== false;
+  var isQrisEnabled = isMasterEnabled && (qris.qrisEnabled !== false);
+  var isRekeningEnabled = isMasterEnabled && (qris.rekeningEnabled !== false);
 
-  if (toggle) toggle.checked = isEnabled;
-  if (badge) {
-    badge.textContent = isEnabled ? 'Aktif' : 'Nonaktif';
-    badge.style.background = isEnabled ? '#e8f5e9' : '#ffebee';
-    badge.style.color = isEnabled ? '#27ae60' : '#e74c3c';
+  // 1. Gambar QRIS Toggle
+  var qrisToggle = $('qris-code-toggle');
+  var qrisBadge = $('qris-code-badge');
+  var qrisIcon = $('qris-code-icon');
+  var qrisCard = $('card-qris-image');
+
+  if (qrisToggle) qrisToggle.checked = isQrisEnabled;
+  if (qrisBadge) {
+    qrisBadge.textContent = isQrisEnabled ? 'Aktif' : 'Nonaktif';
+    qrisBadge.style.background = isQrisEnabled ? '#e8f5e9' : '#ffebee';
+    qrisBadge.style.color = isQrisEnabled ? '#27ae60' : '#e74c3c';
   }
-  if (icon) {
-    icon.style.color = isEnabled ? '#27ae60' : '#e74c3c';
+  if (qrisIcon) {
+    qrisIcon.style.color = isQrisEnabled ? '#27ae60' : '#e74c3c';
   }
-  if (container) {
-    container.style.borderLeftColor = isEnabled ? '#27ae60' : '#e74c3c';
+  if (qrisCard) {
+    qrisCard.style.borderLeftColor = isQrisEnabled ? '#27ae60' : '#e74c3c';
+  }
+
+  // 2. Nomor Rekening Toggle
+  var rekToggle = $('rekening-enabled-toggle');
+  var rekBadge = $('rekening-status-badge');
+  var rekIcon = $('rekening-icon');
+  var rekCard = $('card-qris-rekening');
+
+  if (rekToggle) rekToggle.checked = isRekeningEnabled;
+  if (rekBadge) {
+    rekBadge.textContent = isRekeningEnabled ? 'Aktif' : 'Nonaktif';
+    rekBadge.style.background = isRekeningEnabled ? '#e8f5e9' : '#ffebee';
+    rekBadge.style.color = isRekeningEnabled ? '#27ae60' : '#e74c3c';
+  }
+  if (rekIcon) {
+    rekIcon.style.color = isRekeningEnabled ? '#27ae60' : '#e74c3c';
+  }
+  if (rekCard) {
+    rekCard.style.borderLeftColor = isRekeningEnabled ? '#27ae60' : '#e74c3c';
   }
 
   var prev = $('qris-preview');
@@ -662,38 +685,62 @@ function loadQris() {
   if ($('qris-note-input')) $('qris-note-input').value = qris.note || '';
 }
 
-async function toggleQrisStatus(enabled) {
+async function toggleQrisCodeStatus(enabled) {
   var qris = adminData.qris || {};
-  qris.enabled = enabled;
-  var badge = $('qris-status-badge');
-  var icon = $('qris-toggle-icon');
-  var container = $('qris-toggle-container');
+  qris.qrisEnabled = enabled;
+  qris.enabled = (qris.qrisEnabled !== false) || (qris.rekeningEnabled !== false);
+
+  var badge = $('qris-code-badge');
+  var icon = $('qris-code-icon');
+  var card = $('card-qris-image');
 
   if (badge) {
     badge.textContent = enabled ? 'Aktif' : 'Nonaktif';
     badge.style.background = enabled ? '#e8f5e9' : '#ffebee';
     badge.style.color = enabled ? '#27ae60' : '#e74c3c';
   }
-  if (icon) {
-    icon.style.color = enabled ? '#27ae60' : '#e74c3c';
-  }
-  if (container) {
-    container.style.borderLeftColor = enabled ? '#27ae60' : '#e74c3c';
-  }
+  if (icon) icon.style.color = enabled ? '#27ae60' : '#e74c3c';
+  if (card) card.style.borderLeftColor = enabled ? '#27ae60' : '#e74c3c';
 
   try {
     await setConfig('qris', qris);
     adminData.qris = qris;
-    showToast(enabled ? '\u2705 Fitur QRIS diaktifkan (ON)' : '\u26A0\uFE0F Fitur QRIS dinonaktifkan (OFF)');
+    showToast(enabled ? '✅ Gambar QRIS diaktifkan (ON)' : '⚠️ Gambar QRIS dinonaktifkan (OFF)');
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+async function toggleRekeningStatus(enabled) {
+  var qris = adminData.qris || {};
+  qris.rekeningEnabled = enabled;
+  qris.enabled = (qris.qrisEnabled !== false) || (qris.rekeningEnabled !== false);
+
+  var badge = $('rekening-status-badge');
+  var icon = $('rekening-icon');
+  var card = $('card-qris-rekening');
+
+  if (badge) {
+    badge.textContent = enabled ? 'Aktif' : 'Nonaktif';
+    badge.style.background = enabled ? '#e8f5e9' : '#ffebee';
+    badge.style.color = enabled ? '#27ae60' : '#e74c3c';
+  }
+  if (icon) icon.style.color = enabled ? '#27ae60' : '#e74c3c';
+  if (card) card.style.borderLeftColor = enabled ? '#27ae60' : '#e74c3c';
+
+  try {
+    await setConfig('qris', qris);
+    adminData.qris = qris;
+    showToast(enabled ? '✅ Info Nomor Rekening diaktifkan (ON)' : '⚠️ Info Nomor Rekening dinonaktifkan (OFF)');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
   }
 }
 
 async function uploadQris() {
   var fileInput = $('qris-file');
   if (!fileInput || !fileInput.files.length) {
-    showToast('\u26A0\uFE0F Pilih file gambar QRIS terlebih dahulu');
+    showToast('⚠️ Pilih file gambar QRIS terlebih dahulu');
     return;
   }
   showLoading(true);
@@ -706,10 +753,10 @@ async function uploadQris() {
     fileInput.value = '';
     loadQris();
     showLoading(false);
-    showToast('\u2705 Gambar QRIS berhasil diupload!');
+    showToast('✅ Gambar QRIS berhasil diupload!');
   } catch (err) {
     showLoading(false);
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
   }
 }
 
@@ -721,26 +768,31 @@ async function removeQris() {
     await setConfig('qris', qris);
     adminData.qris = qris;
     loadQris();
-    showToast('\u2705 Gambar QRIS dihapus!');
+    showToast('✅ Gambar QRIS dihapus!');
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
   }
 }
 
 async function saveQris() {
   var name = $('qris-name-input') ? $('qris-name-input').value.trim() : '';
   var note = $('qris-note-input') ? $('qris-note-input').value.trim() : '';
-  var enabled = $('qris-enabled-toggle') ? $('qris-enabled-toggle').checked : true;
+  var qrisEnabled = $('qris-code-toggle') ? $('qris-code-toggle').checked : true;
+  var rekeningEnabled = $('rekening-enabled-toggle') ? $('rekening-enabled-toggle').checked : true;
+
   var qris = adminData.qris || {};
   qris.name = name;
   qris.note = note;
-  qris.enabled = enabled;
+  qris.qrisEnabled = qrisEnabled;
+  qris.rekeningEnabled = rekeningEnabled;
+  qris.enabled = qrisEnabled || rekeningEnabled;
+
   try {
     await setConfig('qris', qris);
     adminData.qris = qris;
-    showToast('\u2705 Data & status QRIS disimpan!');
+    showToast('✅ Data & status Rekening/QRIS disimpan!');
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
   }
 }
 
@@ -944,11 +996,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var btnSaveOpening = $('btn-save-opening');
   if (btnSaveOpening) btnSaveOpening.addEventListener('click', saveOpening);
 
-  // QRIS events
-  var qrisToggle = $('qris-enabled-toggle');
+  // QRIS & Rekening events
+  var qrisToggle = $('qris-code-toggle');
   if (qrisToggle) {
     qrisToggle.addEventListener('change', function() {
-      toggleQrisStatus(this.checked);
+      toggleQrisCodeStatus(this.checked);
+    });
+  }
+  var rekToggle = $('rekening-enabled-toggle');
+  if (rekToggle) {
+    rekToggle.addEventListener('change', function() {
+      toggleRekeningStatus(this.checked);
     });
   }
   var btnQrisUpload = $('btn-qris-upload');

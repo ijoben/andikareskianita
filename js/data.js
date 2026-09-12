@@ -37,6 +37,8 @@ var DEFAULT_DATA = {
   },
   qris: {
     enabled: true,
+    qrisEnabled: true,
+    rekeningEnabled: true,
     image: '',
     name: 'a.n. Muhammad Andik / Rezkianita',
     note: 'Terima kasih atas doa restu dan tanda kasih Anda'
