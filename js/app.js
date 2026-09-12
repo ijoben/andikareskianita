@@ -174,10 +174,19 @@ function openInvitation() {
     startCountdown();
     window.scrollTo(0, 0);
   }
-  // Try autoplay music on user interaction
+  // Auto-play music softly on open invitation
   var audio = $('bg-music');
-  if (audio && audio.src && audio.paused) {
-    audio.play().catch(function() {});
+  var btn = $('music-toggle');
+  if (audio && audio.src) {
+    audio.volume = 0.25; // Gentle and soft volume
+    audio.play().then(function() {
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-music"></i>';
+        btn.style.opacity = '1';
+      }
+    }).catch(function(e) {
+      console.warn('Autoplay error:', e);
+    });
   }
 }
 
@@ -402,21 +411,31 @@ async function submitWish(e) {
 // ── Music ────────────────────────────────────────────────────
 function initMusic() {
   var audio = $('bg-music');
+  if (!audio) {
+    audio = document.createElement('audio');
+    audio.id = 'bg-music';
+    audio.loop = true;
+    document.body.appendChild(audio);
+  }
   var btn = $('music-toggle');
-  if (!audio || !btn) return;
-  var music = weddingData.music || {};
+  var music = (weddingData && weddingData.music) || {};
   if (music.dataUrl) audio.src = music.dataUrl;
-  btn.addEventListener('click', function() {
-    if (audio.paused) {
-      audio.play();
-      btn.innerHTML = '<i class="fas fa-music"></i>';
-      btn.style.opacity = '1';
-    } else {
-      audio.pause();
-      btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-      btn.style.opacity = '0.6';
-    }
-  });
+  audio.volume = 0.25; // Gentle & soft volume
+
+  if (btn) {
+    btn.onclick = function() {
+      if (audio.paused) {
+        audio.play().then(function() {
+          btn.innerHTML = '<i class="fas fa-music"></i>';
+          btn.style.opacity = '1';
+        }).catch(function(e) { console.warn('Music play error:', e); });
+      } else {
+        audio.pause();
+        btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        btn.style.opacity = '0.6';
+      }
+    };
+  }
 }
 
 // ── Scroll to bottom button ──────────────────────────────────

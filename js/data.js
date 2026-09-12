@@ -3,14 +3,14 @@
 
 var DEFAULT_DATA = {
   couple: {
-    groom: { name: 'Ahmad', fullName: 'Ahmad Rizki Pratama, S.Kom', father: 'Bapak H. Muhammad Pratama', mother: 'Ibu Hj. Siti Aminah', photo: '' },
-    bride: { name: 'Fatimah', fullName: 'Fatimah Azzahra, S.Pd', father: 'Bapak H. Abdullah Azzahra', mother: 'Ibu Hj. Nur Halimah', photo: '' },
+    groom: { name: 'Andika', fullName: 'MUHAMMAD ANDIK', father: '', mother: '', photo: '' },
+    bride: { name: 'Rezki', fullName: 'REZKIANITA', father: '', mother: '', photo: '' },
     quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri.',
     quoteSource: 'QS. Ar-Rum: 21'
   },
   events: [
-    { id: 'akad', title: 'Akad Nikah', enabled: true, date: '2026-10-15', time: '08:00', endTime: '10:00', venue: 'Masjid Agung Al-Azhar', address: 'Jl. Sisingamangaraja No. 1, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2447,106.7951' },
-    { id: 'resepsi', title: 'Resepsi', enabled: true, date: '2026-10-15', time: '11:00', endTime: '14:00', venue: 'Gedung Serbaguna Trimatra', address: 'Jl. Gatot Subroto No. 12, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2420,106.8100' }
+    { id: 'akad', title: 'Akad Nikah', enabled: false, date: '2026-10-18', time: '08:00', endTime: '10:00', venue: '', address: 'Jl. Sisingamangaraja No. 1, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2447,106.7951' },
+    { id: 'resepsi', title: 'Resepsi', enabled: true, date: '2026-10-18', time: '09:00', endTime: '14:00', venue: 'Gedung Serbaguna Trimatra', address: 'Jl. Gatot Subroto No. 12, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2420,106.8100' }
   ],
   stories: [
     { id: 1, title: 'Pertama Bertemu', date: '2020-01-15', description: 'Kami pertama kali bertemu di kampus.', photo: '' },
