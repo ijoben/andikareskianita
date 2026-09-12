@@ -100,8 +100,8 @@ function renderOverlay(data) {
   var olDate = $('open-date');
   if (olDate) {
     var events = data.events || [];
-    var akad = events.find(function(e) { return e.id === 'akad'; });
-    if (akad) olDate.textContent = formatDateShort(akad.date);
+    var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
+    if (activeEvent && activeEvent.date) olDate.textContent = formatDateShort(activeEvent.date);
   }
   createPetals();
 }
@@ -140,10 +140,10 @@ function renderHero(data) {
   if (heroGroom) heroGroom.textContent = groomName;
   if (heroBride) heroBride.textContent = brideName;
   var events = data.events || [];
-  var akad = events.find(function(e) { return e.id === 'akad'; });
+  var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
   var heroDate = $('hero-date-text');
-  if (heroDate && akad) {
-    var d = new Date(akad.date);
+  if (heroDate && activeEvent && activeEvent.date) {
+    var d = new Date(activeEvent.date);
     heroDate.textContent = d.getDate() + ' \u2022 ' + (d.getMonth() + 1) + ' \u2022 ' + d.getFullYear();
   }
 }
@@ -152,9 +152,9 @@ function renderHero(data) {
 function startCountdown() {
   if (!weddingData) return;
   var events = weddingData.events || [];
-  var akad = events.find(function(e) { return e.id === 'akad'; });
-  if (!akad) return;
-  var target = new Date(akad.date + 'T' + (akad.time || '08:00') + ':00').getTime();
+  var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
+  if (!activeEvent || !activeEvent.date) return;
+  var target = new Date(activeEvent.date + 'T' + (activeEvent.time || '08:00') + ':00').getTime();
   function update() {
     var now = Date.now();
     var diff = target - now;
@@ -220,8 +220,9 @@ function renderEvents(data) {
   var container = $('events-grid');
   if (!container) return;
   var events = data.events || [];
-  if (!events.length) { container.innerHTML = '<p class="empty-text">Belum ada info acara</p>'; return; }
-  container.innerHTML = events.map(function(ev) {
+  var activeEvents = events.filter(function(e) { return e.enabled !== false; });
+  if (!activeEvents.length) { container.innerHTML = '<p class="empty-text">Belum ada info acara yang aktif</p>'; return; }
+  container.innerHTML = activeEvents.map(function(ev) {
     var icon = ev.id === 'akad' ? '<i class="fas fa-ring"></i>' : '<i class="fas fa-glass-cheers"></i>';
     var html = '<div class="event-card">' +
       '<div class="event-icon">' + icon + '</div>' +

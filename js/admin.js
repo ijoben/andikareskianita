@@ -162,8 +162,16 @@ function loadEvents() {
   var container = $('events-forms');
   if (!container) return;
   container.innerHTML = events.map(function(ev, i) {
-    return '<div class="form-card">' +
-      '<h3>' + (ev.id === 'akad' ? '\u{1F48D} ' : '\u{1F38A} ') + escapeHtml(ev.title) + '</h3>' +
+    var isEnabled = ev.enabled !== false;
+    var iconClass = ev.id === 'akad' ? 'fas fa-ring' : 'fas fa-glass-cheers';
+    return '<div class="form-card" style="border-top: 3px solid ' + (isEnabled ? '#d4648a' : '#bbb') + ';">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #eee;">' +
+      '<h3 style="margin:0;"><i class="' + iconClass + '"></i> ' + escapeHtml(ev.title) + '</h3>' +
+      '<label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:' + (isEnabled ? '#27ae60' : '#888') + ';">' +
+      '<input type="checkbox" id="ev-enabled-' + i + '" ' + (isEnabled ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;accent-color:#d4648a;" onchange="this.parentElement.style.color = this.checked ? \'#27ae60\' : \'#888\'; this.closest(\'.form-card\').style.borderTopColor = this.checked ? \'#d4648a\' : \'#bbb\';">' +
+      '<span>Tampilkan Acara</span>' +
+      '</label>' +
+      '</div>' +
       '<div class="form-grid">' +
       '<div class="form-group"><label>Tanggal</label><input type="date" id="ev-date-' + i + '" value="' + (ev.date || '') + '"></div>' +
       '<div class="form-group"><label>Waktu Mulai</label><input type="time" id="ev-time-' + i + '" value="' + (ev.time || '') + '"></div>' +
@@ -179,9 +187,11 @@ function loadEvents() {
 async function saveEvents() {
   var events = adminData.events || [];
   var updated = events.map(function(ev, i) {
+    var enCheckbox = $('ev-enabled-' + i);
     return {
       id: ev.id,
       title: ev.title,
+      enabled: enCheckbox ? enCheckbox.checked : true,
       date: $('ev-date-' + i).value,
       time: $('ev-time-' + i).value,
       endTime: $('ev-endtime-' + i).value,
