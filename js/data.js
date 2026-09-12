@@ -36,6 +36,7 @@ var DEFAULT_DATA = {
     qrisBgOpacity: 20
   },
   qris: {
+    enabled: true,
     image: '',
     name: 'a.n. Muhammad Andik / Rezkianita',
     note: 'Terima kasih atas doa restu dan tanda kasih Anda'

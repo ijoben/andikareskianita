@@ -631,6 +631,25 @@ function closeSidebar() {
 // ── QRIS ─────────────────────────────────────────────────────
 function loadQris() {
   var qris = adminData.qris || {};
+  var isEnabled = qris.enabled !== false;
+  var toggle = $('qris-enabled-toggle');
+  var badge = $('qris-status-badge');
+  var icon = $('qris-toggle-icon');
+  var container = $('qris-toggle-container');
+
+  if (toggle) toggle.checked = isEnabled;
+  if (badge) {
+    badge.textContent = isEnabled ? 'Aktif' : 'Nonaktif';
+    badge.style.background = isEnabled ? '#e8f5e9' : '#ffebee';
+    badge.style.color = isEnabled ? '#27ae60' : '#e74c3c';
+  }
+  if (icon) {
+    icon.style.color = isEnabled ? '#27ae60' : '#e74c3c';
+  }
+  if (container) {
+    container.style.borderLeftColor = isEnabled ? '#27ae60' : '#e74c3c';
+  }
+
   var prev = $('qris-preview');
   if (prev) {
     if (qris.image) {
@@ -641,6 +660,34 @@ function loadQris() {
   }
   if ($('qris-name-input')) $('qris-name-input').value = qris.name || '';
   if ($('qris-note-input')) $('qris-note-input').value = qris.note || '';
+}
+
+async function toggleQrisStatus(enabled) {
+  var qris = adminData.qris || {};
+  qris.enabled = enabled;
+  var badge = $('qris-status-badge');
+  var icon = $('qris-toggle-icon');
+  var container = $('qris-toggle-container');
+
+  if (badge) {
+    badge.textContent = enabled ? 'Aktif' : 'Nonaktif';
+    badge.style.background = enabled ? '#e8f5e9' : '#ffebee';
+    badge.style.color = enabled ? '#27ae60' : '#e74c3c';
+  }
+  if (icon) {
+    icon.style.color = enabled ? '#27ae60' : '#e74c3c';
+  }
+  if (container) {
+    container.style.borderLeftColor = enabled ? '#27ae60' : '#e74c3c';
+  }
+
+  try {
+    await setConfig('qris', qris);
+    adminData.qris = qris;
+    showToast(enabled ? '\u2705 Fitur QRIS diaktifkan (ON)' : '\u26A0\uFE0F Fitur QRIS dinonaktifkan (OFF)');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
 }
 
 async function uploadQris() {
@@ -683,13 +730,15 @@ async function removeQris() {
 async function saveQris() {
   var name = $('qris-name-input') ? $('qris-name-input').value.trim() : '';
   var note = $('qris-note-input') ? $('qris-note-input').value.trim() : '';
+  var enabled = $('qris-enabled-toggle') ? $('qris-enabled-toggle').checked : true;
   var qris = adminData.qris || {};
   qris.name = name;
   qris.note = note;
+  qris.enabled = enabled;
   try {
     await setConfig('qris', qris);
     adminData.qris = qris;
-    showToast('\u2705 Data QRIS disimpan!');
+    showToast('\u2705 Data & status QRIS disimpan!');
   } catch (err) {
     showToast('\u274C Error: ' + err.message);
   }
@@ -896,6 +945,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnSaveOpening) btnSaveOpening.addEventListener('click', saveOpening);
 
   // QRIS events
+  var qrisToggle = $('qris-enabled-toggle');
+  if (qrisToggle) {
+    qrisToggle.addEventListener('change', function() {
+      toggleQrisStatus(this.checked);
+    });
+  }
   var btnQrisUpload = $('btn-qris-upload');
   if (btnQrisUpload) btnQrisUpload.addEventListener('click', uploadQris);
   var btnQrisRemove = $('btn-qris-remove');

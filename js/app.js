@@ -826,9 +826,46 @@ function scrollToSection(id) {
   if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
+// ── Meta Tags Sync (OG & WhatsApp) ───────────────────────────
+function updateMetaTags(data) {
+  if (!data) return;
+  var couple = data.couple || {};
+  var groomName = couple.groom ? (couple.groom.name || couple.groom.fullName || 'Andika') : 'Andika';
+  var brideName = couple.bride ? (couple.bride.name || couple.bride.fullName || 'Rezki') : 'Rezki';
+  var pageTitle = 'The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan';
+  document.title = pageTitle;
+
+  var events = data.events || [];
+  var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
+  var dateStr = (activeEvent && activeEvent.date) ? formatDate(activeEvent.date) : '18 Oktober 2026';
+  var descContent = 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: ' + groomName + ' & ' + brideName + ' (' + dateStr + ').';
+
+  function setMetaContent(selector, val) {
+    var el = document.querySelector(selector);
+    if (el) el.setAttribute('content', val);
+  }
+
+  setMetaContent('meta[property="og:title"]', pageTitle);
+  setMetaContent('meta[name="twitter:title"]', pageTitle);
+  setMetaContent('meta[name="title"]', pageTitle);
+  setMetaContent('meta[property="og:description"]', descContent);
+  setMetaContent('meta[name="description"]', descContent);
+  setMetaContent('meta[name="twitter:description"]', descContent);
+}
+
 // ── QRIS & Gift ──────────────────────────────────────────────
 function renderQRIS(data) {
-  var qris = data.qris || {};
+  var qris = (data && data.qris) || {};
+  var qrisSection = $('qris');
+
+  // Handle ON / OFF Toggle for QRIS section
+  if (qris.enabled === false) {
+    if (qrisSection) qrisSection.style.display = 'none';
+    return;
+  } else {
+    if (qrisSection) qrisSection.style.display = '';
+  }
+
   var imgEl = $('qris-image');
   var nameEl = $('qris-name');
   var noteEl = $('qris-note');
@@ -910,6 +947,7 @@ async function init() {
   if (typeof DEFAULT_DATA !== 'undefined') {
     weddingData = JSON.parse(JSON.stringify(DEFAULT_DATA));
     applyTheme(weddingData.theme || {});
+    updateMetaTags(weddingData);
     renderOverlay(weddingData);
     renderHero(weddingData);
     renderCouple(weddingData);
@@ -925,6 +963,7 @@ async function init() {
     if (freshData) {
       weddingData = freshData;
       applyTheme(weddingData.theme || {});
+      updateMetaTags(weddingData);
       renderOverlay(weddingData);
       renderHero(weddingData);
       renderCouple(weddingData);

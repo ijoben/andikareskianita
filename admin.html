@@ -334,6 +334,25 @@
 
       <section id="page-qris" class="page">
         <h2>Pengaturan QRIS &amp; Kado Digital</h2>
+
+        <!-- Toggle ON / OFF QRIS -->
+        <div class="form-card" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; border-left: 4px solid #27ae60; flex-wrap: wrap; margin-bottom: 20px;" id="qris-toggle-container">
+          <div style="flex: 1; min-width: 240px;">
+            <h3 style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-power-off" id="qris-toggle-icon" style="color: #27ae60;"></i>
+              Status Fitur QRIS &amp; Kado Digital
+            </h3>
+            <p class="help-text" style="margin-bottom: 0;">Aktifkan (ON) atau nonaktifkan (OFF) tampilan menu / section QRIS pada undangan digital tamu.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="qris-enabled-toggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="qris-status-badge" class="badge" style="background:#e8f5e9; color:#27ae60; font-size:13px; padding: 6px 14px; min-width: 75px; text-align: center;">Aktif</span>
+          </div>
+        </div>
+
         <div class="form-card">
           <h3><i class="fas fa-qrcode"></i> Upload Gambar QRIS</h3>
           <p class="help-text">Upload gambar QRIS Code untuk menerima amplop/hadiah digital dari tamu undangan.</p>
@@ -402,8 +421,8 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="js/supabase-config.js?v=20260912_7"></script>
-  <script src="js/data.js?v=20260912_7"></script>
-  <script src="js/admin.js?v=20260912_7"></script>
+  <script src="js/supabase-config.js?v=20260913_1"></script>
+  <script src="js/data.js?v=20260913_1"></script>
+  <script src="js/admin.js?v=20260913_1"></script>
 </body>
 </html>

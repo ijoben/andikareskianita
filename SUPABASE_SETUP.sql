@@ -71,5 +71,16 @@ INSERT INTO config (key, value) VALUES
   "primaryColor":"#d4648a","primaryColorLight":"#f0a5c0","primaryColorDark":"#b84670",
   "darkBg":"#2d1520","bodyBg":"#fff5f7","bodyText":"#333333",
   "heroBg":"","openBg":"","coupleBg":"","storyBg":"","eventsBg":"","galleryBg":"","rsvpBg":""
+}'::jsonb),
+('qris', '{
+  "enabled": true,
+  "image": "",
+  "name": "a.n. Muhammad Andik / Rezkianita",
+  "note": "Terima kasih atas doa restu dan tanda kasih Anda"
+}'::jsonb),
+('opening', '{
+  "title": "Kepada Yth. Bapak/Ibu/Saudara/i",
+  "subtitle": "Mohon maaf apabila ada kesalahan penulisan nama dan gelar",
+  "buttonText": "Buka Undangan"
 }'::jsonb)
 ON CONFLICT (key) DO NOTHING;
