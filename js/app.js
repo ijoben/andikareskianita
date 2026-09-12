@@ -206,6 +206,43 @@ function openInvitation(instant) {
   playMusicSoftly();
 }
 
+// ── Close invitation ─────────────────────────────────────────
+function closeInvitation() {
+  invitationOpened = false;
+  try { sessionStorage.removeItem('invitation_opened'); } catch (e) {}
+
+  // Pause music if playing
+  var audio = $('bg-music');
+  if (audio) {
+    audio.pause();
+    audio.currentTime = 0;
+    musicPlaying = false;
+  }
+  var mBtn = $('music-toggle');
+  if (mBtn) mBtn.classList.remove('playing');
+
+  // Hide scroll down button
+  var scrollBtn = $('scroll-down-btn');
+  if (scrollBtn) scrollBtn.classList.add('hidden');
+
+  // Scroll to top instantly
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  var overlay = $('open-overlay');
+  var content = $('main-content');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.style.pointerEvents = 'auto';
+    requestAnimationFrame(function() {
+      overlay.style.opacity = '1';
+    });
+  }
+  if (content) {
+    content.classList.add('hidden');
+    content.classList.remove('visible');
+  }
+}
+
 // ── Hero ─────────────────────────────────────────────────────
 function renderHero(data) {
   var couple = data.couple || {};
