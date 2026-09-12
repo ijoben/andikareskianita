@@ -219,53 +219,65 @@ async function saveCouple() {
 
 function fileToBase64(file, maxDim, quality) {
   maxDim = maxDim || 1200;
-  quality = quality || 0.82;
+  quality = quality || 0.80;
   return new Promise(function(resolve, reject) {
     if (!file) return resolve('');
     // For non-image files (e.g. music/audio), read directly
-    if (!file.type || !file.type.startsWith('image/')) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+    if (file.type && file.type.startsWith('audio/')) {
+      var audioReader = new FileReader();
+      audioReader.onload = function(e) { resolve(e.target.result); };
+      audioReader.onerror = function() { reject(new Error('Gagal membaca file audio')); };
+      audioReader.readAsDataURL(file);
       return;
     }
 
-    // For image files, compress and downscale via Canvas for lightning-fast performance
+    // Read image file
     var reader = new FileReader();
     reader.onload = function(e) {
+      var rawResult = e.target.result;
+      if (!rawResult) {
+        return resolve('');
+      }
       var img = new Image();
       img.onload = function() {
-        var width = img.width;
-        var height = img.height;
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
+        try {
+          var width = img.width || 800;
+          var height = img.height || 600;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
           }
-        }
-        var canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, width);
+          canvas.height = Math.max(1, height);
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
 
-        var outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        if (outputType === 'image/png' && file.size < 500000) {
-          resolve(canvas.toDataURL('image/png'));
-        } else {
-          resolve(canvas.toDataURL('image/jpeg', quality));
+          var outputType = (file.type === 'image/png' && file.size < 150000) ? 'image/png' : 'image/jpeg';
+          if (outputType === 'image/png') {
+            resolve(canvas.toDataURL('image/png'));
+          } else {
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          }
+        } catch (canvasErr) {
+          console.warn('Canvas resize error, fallback to raw data:', canvasErr);
+          resolve(rawResult);
         }
       };
       img.onerror = function() {
-        resolve(e.target.result);
+        console.warn('Image load error, fallback to raw data');
+        resolve(rawResult);
       };
-      img.src = e.target.result;
+      img.src = rawResult;
     };
-    reader.onerror = reject;
+    reader.onerror = function() {
+      reject(new Error('Gagal membaca file'));
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -915,10 +927,18 @@ function loadSettings() {
   var titleInput = $('og-title-input');
   var descInput = $('og-desc-input');
   var urlInput = $('og-url-input');
+  var imgUrlInput = $('og-image-url-input');
 
   if (titleInput) titleInput.value = og.title || defaultTitle;
   if (descInput) descInput.value = og.description || defaultDesc;
   if (urlInput) urlInput.value = og.url || defaultUrl;
+  if (imgUrlInput) {
+    if (og.image) {
+      imgUrlInput.value = og.image.startsWith('data:') ? 'Custom Image (Terpasang)' : og.image;
+    } else {
+      imgUrlInput.value = '';
+    }
+  }
 
   updateLiveOgPreview();
 }
@@ -927,6 +947,7 @@ function updateLiveOgPreview() {
   var titleInput = $('og-title-input');
   var descInput = $('og-desc-input');
   var urlInput = $('og-url-input');
+  var imgUrlInput = $('og-image-url-input');
 
   var og = (adminData && adminData.og) || {};
   var couple = (adminData && adminData.couple) || {};
@@ -948,7 +969,9 @@ function updateLiveOgPreview() {
   if (prevDesc) prevDesc.textContent = desc;
   if (prevSite) prevSite.textContent = displayUrl;
 
-  var imgSrc = og.image || (adminData && adminData.theme && adminData.theme.heroBg) || 'assets/images/hero-bg.jpg';
+  var manualImgUrl = (imgUrlInput && imgUrlInput.value.trim() && !imgUrlInput.value.startsWith('Custom Image')) ? imgUrlInput.value.trim() : '';
+  var imgSrc = manualImgUrl || og.image || (adminData && adminData.theme && adminData.theme.heroBg) || 'assets/images/hero-bg.jpg';
+  
   if (prevThumb) {
     if (imgSrc) {
       prevThumb.style.backgroundImage = 'url(\'' + imgSrc + '\')';
@@ -962,13 +985,25 @@ function updateLiveOgPreview() {
 
 async function uploadOgImage() {
   var fileInput = $('og-image-file');
-  if (!fileInput || !fileInput.files.length) {
-    showToast('⚠️ Pilih file gambar thumbnail terlebih dahulu');
+  var imgUrlInput = $('og-image-url-input');
+  
+  var file = fileInput && fileInput.files && fileInput.files[0];
+  var manualUrl = imgUrlInput ? imgUrlInput.value.trim() : '';
+
+  if (!file && (!manualUrl || manualUrl.startsWith('Custom Image'))) {
+    showToast('⚠️ Pilih file gambar atau ketik URL gambar terlebih dahulu');
     return;
   }
+
   showLoading(true);
   try {
-    var dataUrl = await fileToBase64(fileInput.files[0], 800, 0.80);
+    var dataUrl = '';
+    if (file) {
+      dataUrl = await fileToBase64(file, 800, 0.75);
+    } else {
+      dataUrl = manualUrl;
+    }
+
     var og = (adminData && adminData.og) ? adminData.og : {};
     
     // Sync text fields if filled
@@ -982,10 +1017,15 @@ async function uploadOgImage() {
     og.image = dataUrl;
     await setConfig('og', og);
     adminData.og = og;
-    fileInput.value = '';
+    
+    if (fileInput) fileInput.value = '';
+    if (imgUrlInput) {
+      imgUrlInput.value = dataUrl.startsWith('data:') ? 'Custom Image (Terpasang)' : dataUrl;
+    }
+    
     updateLiveOgPreview();
     showLoading(false);
-    showToast('✅ Gambar thumbnail WhatsApp berhasil diupload & disimpan!');
+    showToast('✅ Gambar thumbnail WhatsApp berhasil disimpan!');
   } catch (err) {
     showLoading(false);
     var errMsg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Gagal upload thumbnail');
@@ -1001,6 +1041,10 @@ async function removeOgImage() {
     og.image = '';
     await setConfig('og', og);
     adminData.og = og;
+    
+    var imgUrlInput = $('og-image-url-input');
+    if (imgUrlInput) imgUrlInput.value = '';
+
     updateLiveOgPreview();
     showToast('✅ Thumbnail custom dihapus (menggunakan default)!');
   } catch (err) {
@@ -1014,11 +1058,15 @@ async function saveOgSettings() {
   var title = $('og-title-input') ? $('og-title-input').value.trim() : '';
   var desc = $('og-desc-input') ? $('og-desc-input').value.trim() : '';
   var url = $('og-url-input') ? $('og-url-input').value.trim() : '';
+  var imgUrl = $('og-image-url-input') ? $('og-image-url-input').value.trim() : '';
 
   var og = (adminData && adminData.og) ? adminData.og : {};
   og.title = title;
   og.description = desc;
   og.url = url;
+  if (imgUrl && !imgUrl.startsWith('Custom Image')) {
+    og.image = imgUrl;
+  }
 
   try {
     await setConfig('og', og);
@@ -1303,10 +1351,12 @@ document.addEventListener('DOMContentLoaded', function() {
   var ogTitleInput = $('og-title-input');
   var ogDescInput = $('og-desc-input');
   var ogUrlInput = $('og-url-input');
+  var ogImgUrlInput = $('og-image-url-input');
   var ogFileInput = $('og-image-file');
   if (ogTitleInput) ogTitleInput.addEventListener('input', updateLiveOgPreview);
   if (ogDescInput) ogDescInput.addEventListener('input', updateLiveOgPreview);
   if (ogUrlInput) ogUrlInput.addEventListener('input', updateLiveOgPreview);
+  if (ogImgUrlInput) ogImgUrlInput.addEventListener('input', updateLiveOgPreview);
   if (ogFileInput) {
     ogFileInput.addEventListener('change', function() {
       if (ogFileInput.files && ogFileInput.files[0]) {

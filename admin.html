@@ -472,10 +472,13 @@
 
           <div class="form-group" style="margin-top: 6px;">
             <label><i class="fas fa-image"></i> Gambar Thumbnail Preview WhatsApp (og:image)</label>
-            <p class="help-text">Rekomendasi gambar landscape atau foto mempelai (format JPG/PNG maks 500KB untuk loading instan di WA).</p>
-            <input type="file" id="og-image-file" accept="image/*">
+            <p class="help-text">Pilih file gambar dari galeri/komputer (JPG/PNG), atau masukkan URL gambar langsung.</p>
+            <div style="margin-bottom: 10px;">
+              <input type="text" id="og-image-url-input" placeholder="https://... atau upload file langsung di bawah" style="margin-bottom: 8px;">
+              <input type="file" id="og-image-file" accept="image/*">
+            </div>
             <div class="bg-actions" style="margin-top: 10px;">
-              <button class="btn-save sm" id="btn-og-upload"><i class="fas fa-upload"></i> Upload Thumbnail</button>
+              <button class="btn-save sm" id="btn-og-upload"><i class="fas fa-upload"></i> Upload &amp; Simpan Thumbnail</button>
               <button class="btn-outline sm" id="btn-og-remove"><i class="fas fa-trash"></i> Hapus &amp; Pakai Default</button>
             </div>
           </div>
@@ -504,8 +507,8 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="js/supabase-config.js?v=20260913_4"></script>
-  <script src="js/data.js?v=20260913_4"></script>
-  <script src="js/admin.js?v=20260913_4"></script>
+  <script src="js/supabase-config.js?v=20260913_5"></script>
+  <script src="js/data.js?v=20260913_5"></script>
+  <script src="js/admin.js?v=20260913_5"></script>
 </body>
 </html>
