@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undangan Pernikahan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="open-overlay" class="open-overlay">
+    <div class="open-envelope">
+      <div class="envelope-icon"><i class="fas fa-envelope-open-text"></i></div>
+      <h2 class="open-to">Kepada Yth. Bapak/Ibu/Saudara/i</h2>
+      <p class="open-subtitle">Mohon maaf apabila ada kesalahan penulisan nama dan gelar</p>
+      <button id="open-btn" class="open-btn"><i class="fas fa-envelope-open"></i> Buka Undangan</button>
+    </div>
+  </div>
+
+  <div id="main-content" class="main-content hidden">
+    <button id="music-toggle" class="music-toggle" title="Toggle Music"><i class="fas fa-music"></i></button>
+
+    <section id="hero" class="section hero-section">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <p class="hero-subtitle reveal">The Wedding Of</p>
+        <h1 class="hero-names reveal">
+          <span class="groom-name" id="hero-groom">Ahmad</span>
+          <span class="hero-ampersand">&amp;</span>
+          <span class="bride-name" id="hero-bride">Fatimah</span>
+        </h1>
+        <div class="hero-date reveal">
+          <div class="date-divider"></div>
+          <p id="hero-date-text">15 &#8226; 10 &#8226; 2026</p>
+          <div class="date-divider"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="countdown" class="section countdown-section">
+      <div class="container">
+        <h2 class="section-title reveal">Menuju Hari Bahagia</h2>
+        <div class="countdown-wrapper reveal">
+          <div class="countdown-item"><span class="countdown-number" id="cd-days">00</span><span class="countdown-label">Hari</span></div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item"><span class="countdown-number" id="cd-hours">00</span><span class="countdown-label">Jam</span></div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item"><span class="countdown-number" id="cd-minutes">00</span><span class="countdown-label">Menit</span></div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item"><span class="countdown-number" id="cd-seconds">00</span><span class="countdown-label">Detik</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="couple" class="section couple-section">
+      <div class="container">
+        <h2 class="section-title reveal">Mempelai</h2>
+        <div class="couple-grid">
+          <div class="couple-card reveal">
+            <div class="couple-photo"><img id="groom-photo" src="/assets/images/groom.jpg" alt="Mempelai Pria"></div>
+            <h3 class="couple-name" id="groom-name">Ahmad Rizki Pratama, S.Kom</h3>
+            <p class="couple-parents" id="groom-parents">Putra dari<br>Bapak H. Muhammad Pratama<br>&amp;<br>Ibu Hj. Siti Aminah</p>
+          </div>
+          <div class="couple-heart reveal"><i class="fas fa-heart"></i></div>
+          <div class="couple-card reveal">
+            <div class="couple-photo"><img id="bride-photo" src="/assets/images/bride.jpg" alt="Mempelai Wanita"></div>
+            <h3 class="couple-name" id="bride-name">Fatimah Azzahra, S.Pd</h3>
+            <p class="couple-parents" id="bride-parents">Putri dari<br>Bapak H. Abdullah Azzahra<br>&amp;<br>Ibu Hj. Nur Halimah</p>
+          </div>
+        </div>
+        <div class="couple-quote reveal">
+          <p id="couple-quote-text">"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri."</p>
+          <span id="couple-quote-source">&#8212; QS. Ar-Rum: 21</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="story" class="section story-section">
+      <div class="container"><h2 class="section-title reveal">Love Story</h2><div class="timeline" id="story-timeline"></div></div>
+    </section>
+
+    <section id="events" class="section events-section">
+      <div class="container"><h2 class="section-title reveal">Waktu &amp; Tempat</h2><div class="events-grid" id="events-grid"></div></div>
+    </section>
+
+    <section id="gallery" class="section gallery-section">
+      <div class="container"><h2 class="section-title reveal">Galeri</h2><div class="gallery-grid" id="gallery-grid"></div></div>
+    </section>
+
+    <section id="rsvp" class="section rsvp-section">
+      <div class="container">
+        <h2 class="section-title reveal">RSVP</h2>
+        <p class="section-subtitle reveal">Mohon konfirmasi kehadiran Anda</p>
+        <form id="rsvp-form" class="rsvp-form reveal">
+          <div class="form-group"><label for="rsvp-name">Nama Lengkap</label><input type="text" id="rsvp-name" placeholder="Masukkan nama lengkap" required></div>
+          <div class="form-group"><label>Konfirmasi Kehadiran</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="attendance" value="hadir" required><i class="fas fa-check-circle"></i> Hadir</label>
+              <label class="radio-label"><input type="radio" name="attendance" value="tidak_hadir"><i class="fas fa-times-circle"></i> Tidak Hadir</label>
+              <label class="radio-label"><input type="radio" name="attendance" value="ragu"><i class="fas fa-question-circle"></i> Masih Ragu</label>
+            </div>
+          </div>
+          <div class="form-group"><label for="rsvp-guests">Jumlah Tamu</label>
+            <select id="rsvp-guests"><option value="1">1 Orang</option><option value="2">2 Orang</option><option value="3">3 Orang</option><option value="4">4 Orang</option><option value="5">5 Orang</option></select>
+          </div>
+          <div class="form-group"><label for="rsvp-message">Ucapan &amp; Doa</label><textarea id="rsvp-message" rows="3" placeholder="Tulis ucapan dan doa..."></textarea></div>
+          <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Kirim Konfirmasi</button>
+        </form>
+        <div id="rsvp-success" class="rsvp-success hidden"><i class="fas fa-check-circle"></i><h3>Terima Kasih!</h3><p>Konfirmasi kehadiran Anda telah kami terima.</p></div>
+      </div>
+    </section>
+
+    <section id="wishes" class="section wishes-section">
+      <div class="container"><h2 class="section-title reveal">Ucapan &amp; Doa</h2><div class="wishes-grid" id="wishes-grid"></div></div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-couple"><span id="footer-groom">Ahmad</span> <i class="fas fa-heart"></i> <span id="footer-bride">Fatimah</span></div>
+        <p class="footer-thanks">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kami.</p>
+        <p class="footer-wassalam">Wassalamu'alaikum Warahmatullahi Wabarakatuh</p>
+        <p class="footer-copy">&copy; 2026 Wedding Invitation</p>
+      </div>
+    </footer>
+  </div>
+
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></button>
+    <button class="lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+    <button class="lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+    <img id="lightbox-img" src="" alt="">
+    <p id="lightbox-caption" class="lightbox-caption"></p>
+  </div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

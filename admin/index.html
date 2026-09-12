@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Wedding Invitation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div id="login-page" class="login-page">
+    <div class="login-card">
+      <div class="login-icon"><i class="fas fa-heart"></i></div>
+      <h1>Admin Panel</h1>
+      <p>Undangan Pernikahan</p>
+      <form id="login-form">
+        <div class="form-group"><label><i class="fas fa-user"></i> Username</label><input type="text" id="login-username" placeholder="Masukkan username" required></div>
+        <div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="login-password" placeholder="Masukkan password" required></div>
+        <button type="submit" class="btn-login">Masuk</button>
+        <p id="login-error" class="login-error hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-app" class="admin-app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header"><i class="fas fa-heart"></i> <span>Wedding Admin</span></div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="#" class="nav-item" data-page="couple"><i class="fas fa-heart"></i> Mempelai</a>
+        <a href="#" class="nav-item" data-page="events"><i class="fas fa-calendar-alt"></i> Acara</a>
+        <a href="#" class="nav-item" data-page="gallery"><i class="fas fa-images"></i> Galeri</a>
+        <a href="#" class="nav-item" data-page="stories"><i class="fas fa-book-open"></i> Love Story</a>
+        <a href="#" class="nav-item" data-page="music"><i class="fas fa-music"></i> Musik</a>
+        <a href="#" class="nav-item" data-page="rsvps"><i class="fas fa-user-check"></i> RSVP</a>
+        <a href="#" class="nav-item" data-page="wishes"><i class="fas fa-comment-dots"></i> Ucapan</a>
+        <a href="#" class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Pengaturan</a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" target="_blank" class="nav-item"><i class="fas fa-external-link-alt"></i> Lihat Undangan</a>
+        <a href="#" class="nav-item" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+      </div>
+    </aside>
+
+    <div class="mobile-header"><button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button><span>Wedding Admin</span><a href="/" target="_blank"><i class="fas fa-external-link-alt"></i></a></div>
+
+    <main class="main-content" id="main-area">
+      <section id="page-dashboard" class="page active">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-user-check"></i></div><div class="stat-info"><span class="stat-number" id="stat-hadir">0</span><span class="stat-label">Hadir</span></div></div>
+          <div class="stat-card"><div class="stat-icon red"><i class="fas fa-user-times"></i></div><div class="stat-info"><span class="stat-number" id="stat-tidak">0</span><span class="stat-label">Tidak Hadir</span></div></div>
+          <div class="stat-card"><div class="stat-icon yellow"><i class="fas fa-user-clock"></i></div><div class="stat-info"><span class="stat-number" id="stat-ragu">0</span><span class="stat-label">Ragu</span></div></div>
+          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-comment"></i></div><div class="stat-info"><span class="stat-number" id="stat-wishes">0</span><span class="stat-label">Ucapan</span></div></div>
+        </div>
+      </section>
+
+      <section id="page-couple" class="page">
+        <h2>Edit Mempelai</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-male"></i> Mempelai Pria</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nama Panggilan</label><input type="text" id="groom-name"></div>
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="groom-full"></div>
+            <div class="form-group"><label>Ayah</label><input type="text" id="groom-father"></div>
+            <div class="form-group"><label>Ibu</label><input type="text" id="groom-mother"></div>
+          </div>
+          <div class="form-group"><label>Foto Profil</label><input type="file" id="groom-photo-file" accept="image/*"><div class="current-file" id="groom-photo-current"></div></div>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-female"></i> Mempelai Wanita</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nama Panggilan</label><input type="text" id="bride-name"></div>
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="bride-full"></div>
+            <div class="form-group"><label>Ayah</label><input type="text" id="bride-father"></div>
+            <div class="form-group"><label>Ibu</label><input type="text" id="bride-mother"></div>
+          </div>
+          <div class="form-group"><label>Foto Profil</label><input type="file" id="bride-photo-file" accept="image/*"><div class="current-file" id="bride-photo-current"></div></div>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-quote-left"></i> Quote</h3>
+          <div class="form-group"><label>Quote</label><textarea id="couple-quote" rows="3"></textarea></div>
+          <div class="form-group"><label>Sumber</label><input type="text" id="couple-quote-source"></div>
+        </div>
+        <button class="btn-save" onclick="saveCouple()"><i class="fas fa-save"></i> Simpan</button>
+      </section>
+
+      <section id="page-events" class="page">
+        <h2>Edit Acara</h2>
+        <div id="events-forms"></div>
+        <button class="btn-save" onclick="saveEvents()"><i class="fas fa-save"></i> Simpan Semua</button>
+      </section>
+
+      <section id="page-gallery" class="page">
+        <h2>Galeri Foto</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-upload"></i> Upload Foto Baru</h3>
+          <div class="form-group"><label>Caption</label><input type="text" id="gallery-caption" placeholder="Deskripsi foto"></div>
+          <div class="form-group"><label>Pilih Foto</label><input type="file" id="gallery-file" accept="image/*"></div>
+          <button class="btn-save" onclick="uploadGallery()"><i class="fas fa-upload"></i> Upload</button>
+        </div>
+        <div class="gallery-list" id="gallery-list"></div>
+      </section>
+
+      <section id="page-stories" class="page">
+        <h2>Love Story</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-plus"></i> Tambah Cerita</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Judul</label><input type="text" id="story-title" placeholder="Pertama Bertemu"></div>
+            <div class="form-group"><label>Tanggal</label><input type="date" id="story-date"></div>
+          </div>
+          <div class="form-group"><label>Deskripsi</label><textarea id="story-desc" rows="3" placeholder="Cerita perjalanan cinta..."></textarea></div>
+          <div class="form-group"><label>Foto</label><input type="file" id="story-file" accept="image/*"></div>
+          <button class="btn-save" onclick="addStory()"><i class="fas fa-plus"></i> Tambah</button>
+        </div>
+        <div class="stories-list" id="stories-list"></div>
+      </section>
+
+      <section id="page-music" class="page">
+        <h2>Musik Latar</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-upload"></i> Upload Musik</h3>
+          <p class="help-text">Format: MP3, WAV, OGG (Max 5MB)</p>
+          <div class="form-group"><label>File Musik</label><input type="file" id="music-file" accept="audio/*"></div>
+          <div class="current-file" id="music-current"></div>
+          <button class="btn-save" onclick="uploadMusic()"><i class="fas fa-upload"></i> Upload Musik</button>
+        </div>
+      </section>
+
+      <section id="page-rsvps" class="page">
+        <h2>Daftar RSVP</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead><tr><th>No</th><th>Nama</th><th>Kehadiran</th><th>Tamu</th><th>Ucapan</th><th>Tanggal</th></tr></thead>
+            <tbody id="rsvp-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="page-wishes" class="page">
+        <h2>Ucapan &amp; Doa</h2>
+        <div class="wishes-admin-list" id="wishes-admin-list"></div>
+      </section>
+
+      <section id="page-settings" class="page">
+        <h2>Pengaturan</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-key"></i> Ganti Password</h3>
+          <div class="form-group"><label>Password Lama</label><input type="password" id="old-password"></div>
+          <div class="form-group"><label>Password Baru</label><input type="password" id="new-password"></div>
+          <button class="btn-save" onclick="changePassword()"><i class="fas fa-save"></i> Ganti Password</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/admin/js/admin.js"></script>
+</body>
+</html>

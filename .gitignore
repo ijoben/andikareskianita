@@ -1,0 +1,7 @@
+node_modules/
+data/wedding.json
+uploads/
+tmp/
+*.log
+_build.js
+.freebuff/
