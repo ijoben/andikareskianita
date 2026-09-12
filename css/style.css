@@ -295,12 +295,19 @@ body {
 }
 .couple-heart {
   font-size: 30px; color: var(--primary);
-  animation: heartbeat 1.5s ease-in-out infinite;
   flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.couple-heart i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: heartbeat 1.5s ease-in-out infinite;
+  transform-origin: center center;
 }
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  50% { transform: scale(1.18); }
 }
 .couple-quote {
   text-align: center; margin-top: 40px;
@@ -812,10 +819,11 @@ body {
   }
   .couple-heart {
     position: absolute;
-    top: 45px;
+    top: 64px;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16px;
+    margin: 0;
+    font-size: 15px;
     width: 32px;
     height: 32px;
     background: var(--white);
@@ -825,7 +833,12 @@ body {
     justify-content: center;
     box-shadow: 0 2px 10px rgba(212,100,138,0.25);
     border: 2px solid var(--primary-light);
-    z-index: 3;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .couple-heart.reveal {
+    transform: translate(-50%, -50%) !important;
+    opacity: 1 !important;
   }
 
   /* Countdown: Proporsional dan ringkas di mobile (tidak terlalu besar) */
@@ -910,7 +923,7 @@ body {
   .couple-photo { width: 85px; height: 85px; }
   .couple-name { font-size: 12.5px; min-height: 34px; }
   .couple-parents { font-size: 10px; line-height: 1.35; }
-  .couple-heart { width: 28px; height: 28px; font-size: 14px; top: 40px; }
+  .couple-heart { width: 28px; height: 28px; font-size: 13px; top: 56.5px; }
   .qris-wrapper { padding: 24px 16px; }
   .qris-image { width: 175px; height: 175px; }
 }
