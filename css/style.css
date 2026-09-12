@@ -893,3 +893,56 @@ body {
   .qris-wrapper { padding: 24px 16px; }
   .qris-image { width: 175px; height: 175px; }
 }
+
+/* ── Utility & RSVP Success States ───── */
+.hidden { display: none !important; }
+
+.rsvp-success {
+  display: none;
+  text-align: center;
+  padding: 35px 25px;
+  background: rgba(39, 174, 96, 0.12);
+  border: 1.5px solid rgba(39, 174, 96, 0.5);
+  border-radius: 20px;
+  color: var(--white);
+  margin: 25px auto 0;
+  max-width: 500px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.rsvp-success i {
+  font-size: 52px;
+  color: #2ecc71;
+  margin-bottom: 15px;
+  display: inline-block;
+}
+.rsvp-success h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.rsvp-success p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+}
+.btn-rsvp-again {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s;
+}
+.btn-rsvp-again:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: #fff;
+}
+

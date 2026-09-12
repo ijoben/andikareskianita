@@ -316,21 +316,37 @@ function renderStory(data) {
 function renderEvents(data) {
   var container = $('events-grid');
   if (!container) return;
-  var events = data.events || [];
+  var events = (data && data.events) || (typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA.events : []);
   var activeEvents = events.filter(function(e) { return e.enabled !== false; });
-  if (!activeEvents.length) { container.innerHTML = '<p class="empty-text">Belum ada info acara yang aktif</p>'; return; }
+  if (!activeEvents.length) {
+    activeEvents = events; // Fallback so Waktu & Tempat is never empty
+  }
+  if (!activeEvents.length) {
+    container.innerHTML = '<p class="empty-text">Belum ada info acara yang aktif</p>';
+    return;
+  }
   container.innerHTML = activeEvents.map(function(ev) {
     var icon = ev.id === 'akad' ? '<i class="fas fa-ring"></i>' : '<i class="fas fa-glass-cheers"></i>';
+    var timeText = formatTime(ev.time);
+    if (ev.endTime && ev.endTime.trim()) {
+      timeText += ' - ' + formatTime(ev.endTime);
+    }
     var html = '<div class="event-card">' +
       '<div class="event-icon">' + icon + '</div>' +
-      '<h3>' + (ev.title || '') + '</h3>' +
+      '<h3>' + escapeHtml(ev.title || (ev.id === 'akad' ? 'Akad Nikah' : 'Resepsi')) + '</h3>' +
       '<div class="event-details">' +
       '<div class="event-detail"><span class="event-detail-icon"><i class="far fa-calendar-alt"></i></span><span>' + formatDate(ev.date) + '</span></div>' +
-      '<div class="event-detail"><span class="event-detail-icon"><i class="far fa-clock"></i></span><span>' + formatTime(ev.time) + '</span></div>' +
-      '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-marker-alt"></i></span><span>' + (ev.venue || '') + '</span></div>' +
-      '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-pin"></i></span><span>' + (ev.address || '') + '</span></div>' +
-      '</div>';
-    if (ev.mapUrl) html += '<a href="' + ev.mapUrl + '" target="_blank" class="btn-map"><i class="fas fa-map-marked-alt"></i> Lihat Peta</a>';
+      '<div class="event-detail"><span class="event-detail-icon"><i class="far fa-clock"></i></span><span>' + timeText + '</span></div>';
+    if (ev.venue && ev.venue.trim()) {
+      html += '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-marker-alt"></i></span><span>' + escapeHtml(ev.venue) + '</span></div>';
+    }
+    if (ev.address && ev.address.trim()) {
+      html += '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-pin"></i></span><span>' + escapeHtml(ev.address) + '</span></div>';
+    }
+    html += '</div>';
+    if (ev.mapUrl && ev.mapUrl.trim()) {
+      html += '<a href="' + ev.mapUrl + '" target="_blank" rel="noopener noreferrer" class="btn-map"><i class="fas fa-map-marked-alt"></i> Lihat Peta</a>';
+    }
     html += '</div>';
     return html;
   }).join('');
@@ -341,35 +357,50 @@ function renderEvents(data) {
 function renderGallery(data) {
   var container = $('gallery-grid');
   if (!container) return;
-  var gallery = data.gallery || [];
-  if (!gallery.length) { container.innerHTML = '<p class="empty-text">Belum ada foto</p>'; return; }
+  var gallery = (data && data.gallery) || [];
+  if (!gallery.length) {
+    container.innerHTML = '<p class="empty-text">Belum ada foto</p>';
+    return;
+  }
   container.innerHTML = gallery.map(function(p, i) {
-    var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
+    var src = '';
+    if (typeof p === 'string') {
+      src = p;
+    } else if (p && typeof p === 'object') {
+      src = p.url || p.dataUrl || '';
+    }
+    if (!src) return '';
     return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
-      '<img src="' + src + '" alt="Gallery ' + (i + 1) + '">' +
+      '<img src="' + src + '" alt="Gallery ' + (i + 1) + '" loading="lazy">' +
       '<div class="gallery-overlay"><span><i class="fas fa-search-plus"></i></span></div></div>';
   }).join('');
 }
 
 function openLightbox(index) {
-  var gallery = weddingData.gallery || [];
+  var gallery = (weddingData && weddingData.gallery) || [];
   if (!gallery.length) return;
   var lb = $('lightbox'), img = $('lightbox-img');
   if (!lb || !img) return;
-  var src = typeof gallery[index] === 'string' ? gallery[index] : (gallery[index].url || gallery[index].dataUrl || '');
+  var p = gallery[index];
+  var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
   img.src = src;
   lb.classList.remove('hidden');
   lb.classList.add('active');
+  lb.style.display = 'flex';
   lb.dataset.current = index;
 }
 function closeLightbox() {
   var lb = $('lightbox');
-  if (lb) { lb.classList.remove('active'); lb.classList.add('hidden'); }
+  if (lb) {
+    lb.classList.remove('active');
+    lb.classList.add('hidden');
+    lb.style.display = 'none';
+  }
 }
 function navLightbox(dir) {
-  var gallery = weddingData.gallery || [];
+  var gallery = (weddingData && weddingData.gallery) || [];
   var lb = $('lightbox');
-  if (!lb) return;
+  if (!lb || !gallery.length) return;
   var idx = parseInt(lb.dataset.current || 0) + dir;
   if (idx < 0) idx = gallery.length - 1;
   if (idx >= gallery.length) idx = 0;
@@ -404,12 +435,31 @@ async function submitRsvp(e) {
   try {
     await addRsvp({ name: name, attendance: attendance.value, guests: guests, message: message });
     showToast('Terima kasih atas konfirmasi Anda!');
-    $('rsvp-form').reset();
+    var formEl = $('rsvp-form');
+    var successEl = $('rsvp-success');
+    if (formEl) formEl.style.display = 'none';
+    if (successEl) {
+      successEl.classList.remove('hidden');
+      successEl.style.display = 'block';
+    }
     // Reload RSVP list
     var rsvps = await getRsvps();
     renderRsvpList(rsvps);
   } catch (err) {
     showToast('Error: ' + err.message);
+  }
+}
+
+function resetRsvpForm() {
+  var formEl = $('rsvp-form');
+  var successEl = $('rsvp-success');
+  if (formEl) {
+    formEl.reset();
+    formEl.style.display = 'block';
+  }
+  if (successEl) {
+    successEl.classList.add('hidden');
+    successEl.style.display = 'none';
   }
 }
 
@@ -629,14 +679,23 @@ function createPetals() {
 // ── Scroll reveal ────────────────────────────────────────────
 function initScrollReveal() {
   var reveals = document.querySelectorAll('.reveal');
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('revealed');
-      }
-    });
-  }, { threshold: 0.1 });
-  reveals.forEach(function(el) { observer.observe(el); });
+  if (!reveals || !reveals.length) return;
+  if (typeof IntersectionObserver === 'undefined') {
+    reveals.forEach(function(el) { el.classList.add('revealed'); });
+    return;
+  }
+  try {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(function(el) { observer.observe(el); });
+  } catch (e) {
+    reveals.forEach(function(el) { el.classList.add('revealed'); });
+  }
 }
 
 // ── Bottom nav scroll function (global) ──────────────────────
@@ -718,9 +777,9 @@ async function init() {
   initScrollBtn();
   initBottomNav();
 
-  showLoading(true);
-  try {
-    weddingData = await loadAllConfig();
+  // 1. Render immediately using DEFAULT_DATA so NO section is ever blank while loading
+  if (typeof DEFAULT_DATA !== 'undefined') {
+    weddingData = JSON.parse(JSON.stringify(DEFAULT_DATA));
     applyTheme(weddingData.theme || {});
     renderOverlay(weddingData);
     renderHero(weddingData);
@@ -729,11 +788,27 @@ async function init() {
     renderEvents(weddingData);
     renderGallery(weddingData);
     renderQRIS(weddingData);
-    initMusic(); // Re-sync in case custom music data was loaded from Supabase
-    initScrollReveal();
+  }
+
+  showLoading(true);
+  try {
+    var freshData = await loadAllConfig();
+    if (freshData) {
+      weddingData = freshData;
+      applyTheme(weddingData.theme || {});
+      renderOverlay(weddingData);
+      renderHero(weddingData);
+      renderCouple(weddingData);
+      renderStory(weddingData);
+      renderEvents(weddingData);
+      renderGallery(weddingData);
+      renderQRIS(weddingData);
+      initMusic(); // Re-sync in case custom music data was loaded from Supabase
+      initScrollReveal();
+    }
   } catch (err) {
     console.error('Init error:', err);
-    showToast('Gagal memuat data. Pastikan Supabase sudah dikonfigurasi.');
+    showToast('Gagal memuat data terbaru dari database.');
   } finally {
     showLoading(false);
   }

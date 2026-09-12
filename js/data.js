@@ -9,8 +9,8 @@ var DEFAULT_DATA = {
     quoteSource: 'QS. Ar-Rum: 21'
   },
   events: [
-    { id: 'akad', title: 'Akad Nikah', enabled: false, date: '2026-10-18', time: '08:00', endTime: '10:00', venue: '', address: 'Jl. Sisingamangaraja No. 1, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2447,106.7951' },
-    { id: 'resepsi', title: 'Resepsi', enabled: true, date: '2026-10-18', time: '09:00', endTime: '14:00', venue: 'Gedung Serbaguna Trimatra', address: 'Jl. Gatot Subroto No. 12, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2420,106.8100' }
+    { id: 'akad', title: 'Akad Nikah', enabled: true, date: '2026-10-18', time: '08:00', endTime: '10:00', venue: 'Kediaman Mempelai Wanita', address: 'Jl. Sisingamangaraja No. 1, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2447,106.7951' },
+    { id: 'resepsi', title: 'Resepsi', enabled: true, date: '2026-10-18', time: '11:00', endTime: '14:00', venue: 'Gedung Serbaguna Trimatra', address: 'Jl. Gatot Subroto No. 12, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2420,106.8100' }
   ],
   stories: [
     { id: 1, title: 'Pertama Bertemu', date: '2020-01-15', description: 'Kami pertama kali bertemu di kampus.', photo: '' },

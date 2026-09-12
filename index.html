@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260912_2">
 </head>
 <body>
   <div class="flower-petals" id="flower-petals"></div>
@@ -112,7 +112,12 @@
           <div class="form-group"><label for="rsvp-message">Ucapan &amp; Doa</label><textarea id="rsvp-message" rows="3" placeholder="Tulis ucapan dan doa..."></textarea></div>
           <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Kirim Konfirmasi</button>
         </form>
-        <div id="rsvp-success" class="rsvp-success hidden"><i class="fas fa-check-circle"></i><h3>Terima Kasih!</h3><p>Konfirmasi kehadiran Anda telah kami terima.</p></div>
+        <div id="rsvp-success" class="rsvp-success hidden" style="display: none;">
+          <i class="fas fa-check-circle"></i>
+          <h3>Terima Kasih!</h3>
+          <p>Konfirmasi kehadiran Anda telah kami terima.</p>
+          <button type="button" class="btn-rsvp-again" onclick="resetRsvpForm()"><i class="fas fa-redo"></i> Kirim Konfirmasi Lain</button>
+        </div>
       </div>
     </section>
 
@@ -177,8 +182,8 @@
   </div>
 
   <audio id="bg-music" src="assets/audio/music.mp3" loop preload="auto"></audio>
-  <script src="js/supabase-config.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/supabase-config.js?v=20260912_2"></script>
+  <script src="js/data.js?v=20260912_2"></script>
+  <script src="js/app.js?v=20260912_2"></script>
 </body>
 </html>
