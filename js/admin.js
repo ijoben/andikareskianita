@@ -93,6 +93,7 @@ function showPage(page, updateHash) {
     case 'qris': loadQris(); break;
     case 'rsvps': loadRsvps(); break;
     case 'wishes': loadWishes(); break;
+    case 'settings': loadSettings(); break;
   }
 }
 
@@ -856,9 +857,123 @@ async function deleteWishById(id) {
   } catch (err) {
     showToast('\u274C Error: ' + err.message);
   }
+// ── Settings & Open Graph (WhatsApp Share) ────────────────────
+function loadSettings() {
+  var og = (adminData && adminData.og) || (typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA.og : {}) || {};
+  var couple = (adminData && adminData.couple) || {};
+  var groomName = (couple.groom && couple.groom.name) ? couple.groom.name : 'Andika';
+  var brideName = (couple.bride && couple.bride.name) ? couple.bride.name : 'Rezki';
+
+  var defaultTitle = 'The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan';
+  var defaultDesc = 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: ' + groomName + ' & ' + brideName + '.';
+  var defaultUrl = 'https://andika-rezkianita.vercel.app/';
+
+  var titleInput = $('og-title-input');
+  var descInput = $('og-desc-input');
+  var urlInput = $('og-url-input');
+
+  if (titleInput) titleInput.value = og.title || defaultTitle;
+  if (descInput) descInput.value = og.description || defaultDesc;
+  if (urlInput) urlInput.value = og.url || defaultUrl;
+
+  updateLiveOgPreview();
 }
 
-// ── Settings ─────────────────────────────────────────────────
+function updateLiveOgPreview() {
+  var titleInput = $('og-title-input');
+  var descInput = $('og-desc-input');
+  var urlInput = $('og-url-input');
+
+  var og = (adminData && adminData.og) || {};
+  var couple = (adminData && adminData.couple) || {};
+  var groomName = (couple.groom && couple.groom.name) ? couple.groom.name : 'Andika';
+  var brideName = (couple.bride && couple.bride.name) ? couple.bride.name : 'Rezki';
+
+  var title = (titleInput && titleInput.value.trim()) || og.title || ('The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan');
+  var desc = (descInput && descInput.value.trim()) || og.description || ('Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu...');
+  var rawUrl = (urlInput && urlInput.value.trim()) || og.url || 'https://andika-rezkianita.vercel.app/';
+  var displayUrl = rawUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+
+  var prevTitle = $('og-preview-title');
+  var prevDesc = $('og-preview-desc');
+  var prevSite = $('og-preview-site');
+  var prevThumb = $('og-preview-thumb');
+  var placeholder = $('og-thumb-placeholder');
+
+  if (prevTitle) prevTitle.textContent = title;
+  if (prevDesc) prevDesc.textContent = desc;
+  if (prevSite) prevSite.textContent = displayUrl;
+
+  var imgSrc = og.image || (adminData && adminData.theme && adminData.theme.heroBg) || 'assets/images/hero-bg.jpg';
+  if (prevThumb) {
+    if (imgSrc) {
+      prevThumb.style.backgroundImage = 'url(\'' + imgSrc + '\')';
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      prevThumb.style.backgroundImage = '';
+      if (placeholder) placeholder.style.display = 'block';
+    }
+  }
+}
+
+async function uploadOgImage() {
+  var fileInput = $('og-image-file');
+  if (!fileInput || !fileInput.files.length) {
+    showToast('⚠️ Pilih file gambar thumbnail terlebih dahulu');
+    return;
+  }
+  showLoading(true);
+  try {
+    var dataUrl = await fileToBase64(fileInput.files[0]);
+    var og = adminData.og || {};
+    og.image = dataUrl;
+    await setConfig('og', og);
+    adminData.og = og;
+    fileInput.value = '';
+    updateLiveOgPreview();
+    showLoading(false);
+    showToast('✅ Gambar thumbnail WhatsApp berhasil diupload!');
+  } catch (err) {
+    showLoading(false);
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+async function removeOgImage() {
+  if (!confirm('Hapus gambar thumbnail custom dan gunakan gambar default hero?')) return;
+  try {
+    var og = adminData.og || {};
+    og.image = '';
+    await setConfig('og', og);
+    adminData.og = og;
+    updateLiveOgPreview();
+    showToast('✅ Thumbnail custom dihapus (menggunakan default)!');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+async function saveOgSettings() {
+  var title = $('og-title-input') ? $('og-title-input').value.trim() : '';
+  var desc = $('og-desc-input') ? $('og-desc-input').value.trim() : '';
+  var url = $('og-url-input') ? $('og-url-input').value.trim() : '';
+
+  var og = adminData.og || {};
+  og.title = title;
+  og.description = desc;
+  og.url = url;
+
+  try {
+    await setConfig('og', og);
+    adminData.og = og;
+    updateLiveOgPreview();
+    showToast('✅ Pengaturan share WhatsApp / Sosial Media berhasil disimpan!');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+// ── Settings (Export & Import) ───────────────────────────────
 async function exportAllData() {
   try {
     var data = await exportData();
@@ -1112,10 +1227,22 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Save Background Settings
-  var btnSaveBgSettings = $('btn-save-bg-settings');
-  if (btnSaveBgSettings) btnSaveBgSettings.addEventListener('click', saveThemeBgSettings);
+  // Open Graph & WhatsApp Settings
+  var btnSaveOg = $('btn-save-og');
+  if (btnSaveOg) btnSaveOg.addEventListener('click', saveOgSettings);
+  var btnOgUpload = $('btn-og-upload');
+  if (btnOgUpload) btnOgUpload.addEventListener('click', uploadOgImage);
+  var btnOgRemove = $('btn-og-remove');
+  if (btnOgRemove) btnOgRemove.addEventListener('click', removeOgImage);
 
-  // Settings
+  var ogTitleInput = $('og-title-input');
+  var ogDescInput = $('og-desc-input');
+  var ogUrlInput = $('og-url-input');
+  if (ogTitleInput) ogTitleInput.addEventListener('input', updateLiveOgPreview);
+  if (ogDescInput) ogDescInput.addEventListener('input', updateLiveOgPreview);
+  if (ogUrlInput) ogUrlInput.addEventListener('input', updateLiveOgPreview);
+
+  // Settings (Export & Import)
   var btnExport = $('btn-export');
   if (btnExport) btnExport.addEventListener('click', exportAllData);
   var btnImportLabel = $('btn-import-label');

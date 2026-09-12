@@ -830,19 +830,24 @@ function scrollToSection(id) {
 function updateMetaTags(data) {
   if (!data) return;
   var couple = data.couple || {};
+  var og = data.og || {};
   var groomName = couple.groom ? (couple.groom.name || couple.groom.fullName || 'Andika') : 'Andika';
   var brideName = couple.bride ? (couple.bride.name || couple.bride.fullName || 'Rezki') : 'Rezki';
-  var pageTitle = 'The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan';
-  document.title = pageTitle;
 
   var events = data.events || [];
   var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
   var dateStr = (activeEvent && activeEvent.date) ? formatDate(activeEvent.date) : '18 Oktober 2026';
-  var descContent = 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: ' + groomName + ' & ' + brideName + ' (' + dateStr + ').';
+
+  var pageTitle = og.title || ('The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan');
+  var descContent = og.description || ('Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: ' + groomName + ' & ' + brideName + ' (' + dateStr + ').');
+  var pageUrl = og.url || window.location.href;
+  var ogImage = og.image || (data.theme && data.theme.heroBg) || 'assets/images/hero-bg.jpg';
+
+  document.title = pageTitle;
 
   function setMetaContent(selector, val) {
     var el = document.querySelector(selector);
-    if (el) el.setAttribute('content', val);
+    if (el && val) el.setAttribute('content', val);
   }
 
   setMetaContent('meta[property="og:title"]', pageTitle);
@@ -851,6 +856,16 @@ function updateMetaTags(data) {
   setMetaContent('meta[property="og:description"]', descContent);
   setMetaContent('meta[name="description"]', descContent);
   setMetaContent('meta[name="twitter:description"]', descContent);
+  setMetaContent('meta[property="og:url"]', pageUrl);
+  setMetaContent('meta[name="twitter:url"]', pageUrl);
+
+  if (ogImage) {
+    setMetaContent('meta[property="og:image"]', ogImage);
+    setMetaContent('meta[property="og:image:secure_url"]', ogImage);
+    setMetaContent('meta[name="twitter:image"]', ogImage);
+    var imgLink = document.querySelector('link[rel="image_src"]');
+    if (imgLink) imgLink.setAttribute('href', ogImage);
+  }
 }
 
 // ── QRIS & Gift ──────────────────────────────────────────────

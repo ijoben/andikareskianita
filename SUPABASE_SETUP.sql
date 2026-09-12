@@ -84,5 +84,11 @@ INSERT INTO config (key, value) VALUES
   "title": "Kepada Yth. Bapak/Ibu/Saudara/i",
   "subtitle": "Mohon maaf apabila ada kesalahan penulisan nama dan gelar",
   "buttonText": "Buka Undangan"
+}'::jsonb),
+('og', '{
+  "title": "The Wedding of Andika & Rezki — Undangan Pernikahan",
+  "description": "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: Muhammad Andik & Rezkianita.",
+  "image": "",
+  "url": "https://andika-rezkianita.vercel.app/"
 }'::jsonb)
 ON CONFLICT (key) DO NOTHING;

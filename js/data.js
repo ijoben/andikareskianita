@@ -47,6 +47,12 @@ var DEFAULT_DATA = {
     title: 'Kepada Yth. Bapak/Ibu/Saudara/i',
     subtitle: 'Mohon maaf apabila ada kesalahan penulisan nama dan gelar',
     buttonText: 'Buka Undangan'
+  },
+  og: {
+    title: 'The Wedding of Andika & Rezki — Undangan Pernikahan',
+    description: 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: Muhammad Andik & Rezkianita.',
+    image: '',
+    url: 'https://andika-rezkianita.vercel.app/'
   }
 };
 
@@ -68,7 +74,7 @@ async function setConfig(key, value) {
 // Load all config data (fast single bulk query from Supabase)
 async function loadAllConfig() {
   var result = {};
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening'];
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening', 'og'];
 
   // 1. Initialize with default fallback
   keys.forEach(function(k) {
@@ -103,7 +109,7 @@ async function loadAllConfig() {
 
 // Save all config data
 async function saveAllConfig(data) {
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening'];
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening', 'og'];
   for (var i = 0; i < keys.length; i++) {
     if (data[keys[i]] !== undefined) {
       await setConfig(keys[i], data[keys[i]]);

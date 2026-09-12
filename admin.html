@@ -416,7 +416,61 @@
       </section>
 
       <section id="page-settings" class="page">
-        <h2>Pengaturan Data</h2>
+        <h2>Pengaturan Umum &amp; Sosial Media</h2>
+
+        <!-- Card: Open Graph & WhatsApp Share Settings -->
+        <div class="form-card" id="card-og-settings" style="border-left: 4px solid #25d366;">
+          <h3 style="margin-bottom: 6px;"><i class="fab fa-whatsapp" style="color: #25d366; font-size: 20px;"></i> Pengaturan Share WhatsApp &amp; Sosial Media (Open Graph)</h3>
+          <p class="help-text">Sesuaikan judul, deskripsi, thumbnail gambar, dan link website yang muncul saat link undangan dibagikan di WhatsApp, Facebook, Instagram, Twitter, dll.</p>
+
+          <div style="margin: 18px 0 24px 0;">
+            <label style="font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 8px; display: block;">
+              <i class="fas fa-eye"></i> Live Simulator Preview WhatsApp Chat
+            </label>
+            <div class="wa-preview-card">
+              <div class="wa-preview-thumb" id="og-preview-thumb" style="background-image: url('assets/images/hero-bg.jpg');">
+                <span id="og-thumb-placeholder" style="display:none;">Thumbnail Preview</span>
+              </div>
+              <div class="wa-preview-body">
+                <div class="wa-preview-site" id="og-preview-site">andika-rezkianita.vercel.app</div>
+                <div class="wa-preview-title" id="og-preview-title">The Wedding of Andika &amp; Rezki — Undangan Pernikahan</div>
+                <div class="wa-preview-desc" id="og-preview-desc">Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label><i class="fas fa-heading"></i> Judul Preview Undangan (og:title)</label>
+              <input type="text" id="og-title-input" placeholder="The Wedding of Andika &amp; Rezki — Undangan Pernikahan">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label><i class="fas fa-align-left"></i> Deskripsi Singkat Preview (og:description)</label>
+              <textarea id="og-desc-input" rows="3" placeholder="Tuliskan deskripsi ringkas yang menarik saat link dibagikan di WhatsApp..."></textarea>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label><i class="fas fa-link"></i> Link / URL Website Resmi (og:url)</label>
+              <input type="text" id="og-url-input" placeholder="https://andika-rezkianita.vercel.app/">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 6px;">
+            <label><i class="fas fa-image"></i> Gambar Thumbnail Preview WhatsApp (og:image)</label>
+            <p class="help-text">Rekomendasi gambar landscape atau foto mempelai (format JPG/PNG maks 500KB untuk loading instan di WA).</p>
+            <input type="file" id="og-image-file" accept="image/*">
+            <div class="bg-actions" style="margin-top: 10px;">
+              <button class="btn-save sm" id="btn-og-upload"><i class="fas fa-upload"></i> Upload Thumbnail</button>
+              <button class="btn-outline sm" id="btn-og-remove"><i class="fas fa-trash"></i> Hapus &amp; Pakai Default</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+            <button class="btn-save" id="btn-save-og"><i class="fas fa-save"></i> Simpan Pengaturan Sosial Media</button>
+          </div>
+        </div>
+
         <div class="form-card">
           <h3><i class="fas fa-download"></i> Export / Import Data</h3>
           <p class="help-text">Export data untuk backup, atau import data dari perangkat lain.</p>
