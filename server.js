@@ -28,7 +28,8 @@ function requireAuth(req, res, next) { if (req.session && req.session.isAdmin) r
 const db0 = loadDB();
 if (!db0.admin.passwordHash) { db0.admin.passwordHash = bcrypt.hashSync("admin123", 10); saveDB(db0); console.log("Default admin: admin / admin123"); }
 
-app.get("/api/wedding", (req, res) => { const db = loadDB(); res.json({ couple: db.couple, events: db.events, music: db.music }); });
+// === PUBLIC APIs ===
+app.get("/api/wedding", (req, res) => { const db = loadDB(); res.json({ couple: db.couple, events: db.events, music: db.music, theme: db.theme || {} }); });
 app.get("/api/gallery", (req, res) => { const db = loadDB(); res.json(db.gallery); });
 app.get("/api/stories", (req, res) => { const db = loadDB(); res.json(db.stories); });
 app.get("/api/wishes", (req, res) => { const db = loadDB(); res.json(db.wishes.slice().reverse().slice(0, 50)); });
@@ -49,6 +50,7 @@ app.post("/api/wishes", (req, res) => {
   db.wishes.push(wish); saveDB(db); res.json({ success: true, wish });
 });
 
+// === ADMIN APIs ===
 app.post("/api/admin/login", (req, res) => {
   const { username, password } = req.body; const db = loadDB();
   if (username === db.admin.username && bcrypt.compareSync(password, db.admin.passwordHash)) {
@@ -57,8 +59,11 @@ app.post("/api/admin/login", (req, res) => {
 });
 app.post("/api/admin/logout", (req, res) => { req.session.destroy(); res.json({ success: true }); });
 app.get("/api/admin/check", (req, res) => { res.json({ isAdmin: !!(req.session && req.session.isAdmin) }); });
-app.get("/api/admin/data", requireAuth, (req, res) => { const db = loadDB(); res.json({ couple: db.couple, events: db.events, stories: db.stories, gallery: db.gallery, music: db.music }); });
-app.get("/api/admin/stats", requireAuth, (req, res) => { const db = loadDB(); res.json({ totalRsvps: db.rsvps.length, hadir: db.rsvps.filter(r=>r.attendance==="hadir").length, tidakHadir: db.rsvps.filter(r=>r.attendance==="tidak_hadir").length, ragu: db.rsvps.filter(r=>r.attendance==="ragu").length, totalWishes: db.wishes.length, totalGallery: db.gallery.length, totalStories: db.stories.length }); });
+app.get("/api/admin/data", requireAuth, (req, res) => { const db = loadDB(); res.json({ couple: db.couple, events: db.events, stories: db.stories, gallery: db.gallery, music: db.music, theme: db.theme || {} }); });
+app.get("/api/admin/stats", requireAuth, (req, res) => {
+  const db = loadDB();
+  res.json({ totalRsvps: db.rsvps.length, hadir: db.rsvps.filter(r=>r.attendance==="hadir").length, tidakHadir: db.rsvps.filter(r=>r.attendance==="tidak_hadir").length, ragu: db.rsvps.filter(r=>r.attendance==="ragu").length, totalWishes: db.wishes.length, totalGallery: db.gallery.length, totalStories: db.stories.length });
+});
 app.get("/api/admin/rsvps", requireAuth, (req, res) => { const db = loadDB(); res.json(db.rsvps); });
 
 app.put("/api/admin/couple", requireAuth, (req, res) => {
@@ -78,6 +83,30 @@ app.put("/api/admin/events", requireAuth, (req, res) => {
 app.post("/api/admin/upload", requireAuth, upload.single("photo"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file" });
   res.json({ success: true, url: "/uploads/" + req.file.filename, filename: req.file.filename });
+});
+
+// Theme upload - background images
+app.post("/api/admin/theme/upload", requireAuth, upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file" });
+  const field = req.body.field || "heroBg";
+  const db = loadDB();
+  // Remove old file if it was an uploaded file
+  const oldVal = db.theme[field];
+  if (oldVal && oldVal.startsWith("/uploads/")) {
+    const oldPath = path.join(__dirname, oldVal);
+    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+  }
+  db.theme[field] = "/uploads/" + req.file.filename;
+  saveDB(db);
+  res.json({ success: true, url: db.theme[field] });
+});
+
+app.put("/api/admin/theme", requireAuth, (req, res) => {
+  const db = loadDB();
+  if (!db.theme) db.theme = {};
+  Object.assign(db.theme, req.body);
+  saveDB(db);
+  res.json({ success: true, theme: db.theme });
 });
 
 app.post("/api/admin/music", requireAuth, upload.single("music"), (req, res) => {

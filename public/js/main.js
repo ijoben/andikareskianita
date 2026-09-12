@@ -11,6 +11,7 @@ function init(){
   gE('lightbox').onclick=function(e){if(e.target===e.currentTarget)closeLB()};
   load();
 }
+
 function openInv(){
   var o=gE('open-overlay');
   o.classList.add('fade-out');
@@ -19,18 +20,58 @@ function openInv(){
     gE('main-content').classList.remove('hidden');
     initReveal();
     startCountdown();
+    createParticles('hero-particles',15);
     if(au){au.play().catch(function(){});mp=true;updMusic()}
   },800);
 }
+
+function createParticles(containerId,count){
+  var c=document.getElementById(containerId);
+  if(!c)return;
+  for(var i=0;i<count;i++){
+    var p=document.createElement('div');
+    p.className='particle';
+    var size=Math.random()*4+2;
+    p.style.width=size+'px';p.style.height=size+'px';
+    p.style.left=Math.random()*100+'%';
+    p.style.animationDuration=(Math.random()*10+10)+'s';
+    p.style.animationDelay=(Math.random()*10)+'s';
+    c.appendChild(p);
+  }
+}
+
+function applyTheme(theme){
+  if(!theme)return;
+  var r=document.documentElement.style;
+  if(theme.primaryColor)r.setProperty('--theme-primary',theme.primaryColor);
+  if(theme.primaryColorLight)r.setProperty('--theme-primary-light',theme.primaryColorLight);
+  if(theme.primaryColorDark)r.setProperty('--theme-primary-dark',theme.primaryColorDark);
+  if(theme.darkBg)r.setProperty('--theme-dark-bg',theme.darkBg);
+  if(theme.bodyBg)r.setProperty('--theme-body-bg',theme.bodyBg);
+  if(theme.bodyText)r.setProperty('--theme-body-text',theme.bodyText);
+  if(theme.heroBg){
+    r.setProperty('--theme-hero-bg','url("'+theme.heroBg+'")');
+    var hb=document.querySelector('.hero-bg');
+    if(hb)hb.style.backgroundImage='url("'+theme.heroBg+'")';
+  }
+  if(theme.openBg){
+    var ob=document.querySelector('.open-overlay');
+    if(ob)ob.style.background='url("'+theme.openBg+'") center/cover';
+  }
+}
+
 async function load(){
   try{
     var r1=await fetch('/api/wedding');w=await r1.json();
     var r2=await fetch('/api/gallery');g=await r2.json();
     var r3=await fetch('/api/stories');var st=await r3.json();
     var r4=await fetch('/api/wishes');var wi=await r4.json();
+    if(w.theme)applyTheme(w.theme);
     updCouple();renderEvents();renderGallery();renderStories(st);renderWishes(wi);initMusic();
+    createParticles('open-particles',8);
   }catch(e){console.error(e)}
 }
+
 function updCouple(){
   if(!w)return;var c=w.couple,e=w.events[0];
   gE('hero-groom').textContent=c.groom.name;
@@ -50,6 +91,7 @@ function updCouple(){
   gE('couple-quote-text').textContent='\u201c'+c.quote+'\u201d';
   gE('couple-quote-source').textContent='\u2014 '+c.quoteSource;
 }
+
 function startCountdown(){
   if(!w||!w.events[0])return;
   var t=new Date(w.events[0].date+'T'+w.events[0].time);
@@ -63,6 +105,7 @@ function startCountdown(){
   }
   u();setInterval(u,1000);
 }
+
 function renderEvents(){
   if(!w)return;var h='';
   w.events.forEach(function(e){
@@ -78,6 +121,7 @@ function renderEvents(){
   });
   gE('events-grid').innerHTML=h;initReveal();
 }
+
 function renderGallery(){
   var gr=gE('gallery-grid');
   if(g.length===0){gr.innerHTML='<p style="text-align:center;color:#999;grid-column:1/-1">Belum ada foto</p>';return}
@@ -92,6 +136,7 @@ function showLB(i){
   gE('lightbox').classList.remove('hidden');document.body.style.overflow='hidden';
 }
 function closeLB(){gE('lightbox').classList.add('hidden');document.body.style.overflow=''}
+
 function renderStories(st){
   var tl=gE('story-timeline');
   if(!st||st.length===0){tl.innerHTML='<p style="text-align:center;color:#999">Belum ada cerita</p>';return}
@@ -105,6 +150,7 @@ function renderStories(st){
     h+='</div>';
   });tl.innerHTML=h;initReveal();
 }
+
 function renderWishes(wi){
   var gr=gE('wishes-grid');
   if(!wi||wi.length===0){gr.innerHTML='<p style="text-align:center;color:#999;grid-column:1/-1">Belum ada ucapan. Jadilah yang pertama!</p>';return}
@@ -117,6 +163,7 @@ function renderWishes(wi){
     h+='<p class="wish-message">\u201c'+w.message+'\u201d</p></div>';
   });gr.innerHTML=h;
 }
+
 async function submitRsvp(e){
   e.preventDefault();
   var n=gE('rsvp-name').value.trim();
@@ -132,6 +179,7 @@ async function submitRsvp(e){
     if(ms){var wr=await fetch('/api/wishes');var wi=await wr.json();renderWishes(wi)}
   }else{var er=await r.json();alert(er.error||'Gagal')}
 }
+
 function initMusic(){
   if(!w||!w.music.filename)return;
   au=new Audio('/uploads/'+w.music.filename);au.loop=true;au.volume=0.5;
@@ -145,6 +193,7 @@ function updMusic(){
   gE('music-toggle').classList.toggle('playing',mp);
   gE('music-toggle').innerHTML=mp?'<i class="fas fa-volume-up"></i>':'<i class="fas fa-volume-mute"></i>';
 }
+
 function initReveal(){
   document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
     var ob=new IntersectionObserver(function(es){

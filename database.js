@@ -22,11 +22,35 @@ const DEFAULT_DATA = {
     { id: 2, photo: "/assets/images/gallery2.jpg", caption: "Pre-wedding" }
   ],
   music: { filename: "", originalName: "Background Music" },
+  theme: {
+    preset: "gold",
+    primaryColor: "#d4af37",
+    primaryColorLight: "#f0d78c",
+    primaryColorDark: "#b8960c",
+    heroBg: "",
+    openBg: "",
+    bodyBg: "#faf7f2",
+    sectionBg: "#ffffff",
+    darkBg: "#1a1a2e",
+    textOnDark: "#ffffff",
+    bodyText: "#333333",
+    sectionTitleStyle: "default"
+  },
   admin: { username: "admin", passwordHash: null },
   rsvps: [], wishes: [],
   nextIds: { story: 4, gallery: 3, rsvp: 1, wish: 1 }
 };
 function ensureDataDir() { const dir = path.join(__dirname, "data"); if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); }
-function loadDB() { ensureDataDir(); if (!fs.existsSync(DB_PATH)) { fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_DATA, null, 2)); return JSON.parse(JSON.stringify(DEFAULT_DATA)); } return JSON.parse(fs.readFileSync(DB_PATH, "utf8")); }
+function loadDB() {
+  ensureDataDir();
+  if (!fs.existsSync(DB_PATH)) {
+    fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_DATA, null, 2));
+    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+  const data = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+  // Ensure theme exists for older databases
+  if (!data.theme) data.theme = JSON.parse(JSON.stringify(DEFAULT_DATA.theme));
+  return data;
+}
 function saveDB(data) { ensureDataDir(); fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2)); }
 module.exports = { loadDB, saveDB, DEFAULT_DATA };
