@@ -119,11 +119,20 @@
           <div class="form-group"><label>Foto Profil</label><input type="file" id="bride-photo-file" accept="image/*"><div class="current-file" id="bride-photo-current"></div></div>
         </div>
         <div class="form-card">
+          <h3><i class="fab fa-whatsapp" style="color:#25d366;"></i> Nomor WhatsApp Mempelai (Tujuan RSVP)</h3>
+          <p class="help-text">Nomor WhatsApp yang akan menerima konfirmasi kehadiran dan ucapan dari formulir RSVP tamu.</p>
+          <div class="form-group">
+            <label>Nomor WhatsApp</label>
+            <input type="text" id="couple-whatsapp" placeholder="Contoh: 081234567890 atau 6281234567890">
+            <small style="color:#888;">Gunakan format 08... atau 628... Sistem otomatis memformat ke tautan resmi WhatsApp.</small>
+          </div>
+        </div>
+        <div class="form-card">
           <h3><i class="fas fa-quote-left"></i> Quote</h3>
           <div class="form-group"><label>Quote</label><textarea id="couple-quote" rows="3"></textarea></div>
           <div class="form-group"><label>Sumber</label><input type="text" id="couple-quote-source"></div>
         </div>
-        <button class="btn-save" id="btn-save-couple"><i class="fas fa-save"></i> Simpan</button>
+        <button class="btn-save" id="btn-save-couple"><i class="fas fa-save"></i> Simpan Data Mempelai</button>
       </section>
 
       <section id="page-events" class="page">
@@ -392,8 +401,8 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="js/supabase-config.js?v=20260912_2"></script>
-  <script src="js/data.js?v=20260912_2"></script>
-  <script src="js/admin.js?v=20260912_2"></script>
+  <script src="js/supabase-config.js?v=20260912_5"></script>
+  <script src="js/data.js?v=20260912_5"></script>
+  <script src="js/admin.js?v=20260912_5"></script>
 </body>
 </html>

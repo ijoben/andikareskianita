@@ -481,23 +481,91 @@ async function submitRsvp(e) {
   var guests = parseInt($('rsvp-guests').value) || 1;
   var message = $('rsvp-message').value.trim();
   if (!name) { showToast('Nama harus diisi!'); return; }
-  if (!attendance) { showToast('Pilih kehadiran!'); return; }
+  if (!attendance) { showToast('Pilih status kehadiran!'); return; }
+
+  var submitBtn = e.target.querySelector('button[type="submit"]');
+  var originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+  }
+
+  // 1. Simpan ke Supabase: Tabel rsvps
   try {
     await addRsvp({ name: name, attendance: attendance.value, guests: guests, message: message });
-    showToast('Terima kasih atas konfirmasi Anda!');
-    var formEl = $('rsvp-form');
-    var successEl = $('rsvp-success');
-    if (formEl) formEl.style.display = 'none';
-    if (successEl) {
-      successEl.classList.remove('hidden');
-      successEl.style.display = 'block';
-    }
-    // Reload RSVP list
-    var rsvps = await getRsvps();
-    renderRsvpList(rsvps);
   } catch (err) {
-    showToast('Error: ' + err.message);
+    console.warn('Gagal addRsvp ke Supabase:', err);
   }
+
+  // 2. Simpan juga ke tabel wishes agar langsung muncul di section Ucapan & Doa
+  if (message) {
+    try {
+      await addWish({ name: name, message: message });
+    } catch (err) {
+      console.warn('Gagal addWish ke Supabase:', err);
+    }
+  }
+
+  // 3. Refresh daftar Ucapan & Doa agar seketika tampil di bawah
+  try {
+    var freshWishes = await getWishes();
+    renderWishes(freshWishes);
+  } catch (err) {
+    console.warn('Refresh wishes error:', err);
+  }
+
+  // 4. Siapkan format pesan WhatsApp mempelai
+  var couple = (weddingData && weddingData.couple) || {};
+  var groomName = (couple.groom && couple.groom.name) ? couple.groom.name : 'Andika';
+  var brideName = (couple.bride && couple.bride.name) ? couple.bride.name : 'Rezki';
+  var attLabel = attendance.value === 'hadir' ? 'Hadir' : (attendance.value === 'tidak_hadir' ? 'Tidak Hadir' : 'Masih Ragu');
+  var guestLabel = attendance.value === 'hadir' ? ' (' + guests + ' Orang)' : '';
+
+  var waMessage = 'Halo ' + groomName + ' & ' + brideName + ',\n\n' +
+    'Saya ingin mengonfirmasi kehadiran untuk acara pernikahan Anda:\n' +
+    '• *Nama:* ' + name + '\n' +
+    '• *Status Kehadiran:* ' + attLabel + guestLabel + '\n' +
+    (message ? '• *Ucapan & Doa:* ' + message + '\n' : '') +
+    '\nTerima kasih!';
+
+  var rawPhone = couple.whatsapp || (weddingData && weddingData.whatsapp) || '';
+  var cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (cleanPhone.startsWith('0')) {
+    cleanPhone = '62' + cleanPhone.slice(1);
+  }
+
+  var waUrl = cleanPhone
+    ? 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(waMessage)
+    : 'https://api.whatsapp.com/send?text=' + encodeURIComponent(waMessage);
+
+  // 5. Tampilkan status sukses di halaman & pasang URL WhatsApp
+  var formEl = $('rsvp-form');
+  var successEl = $('rsvp-success');
+  if (formEl) formEl.style.display = 'none';
+  if (successEl) {
+    successEl.classList.remove('hidden');
+    successEl.style.display = 'block';
+    var waBtn = $('btn-open-wa');
+    if (waBtn) {
+      waBtn.href = waUrl;
+      waBtn.style.display = 'inline-flex';
+    }
+  }
+
+  showToast('Terima kasih! Konfirmasi tersimpan, mengarahkan ke WhatsApp...');
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+  }
+
+  // 6. Otomatis alihkan ke WhatsApp
+  setTimeout(function() {
+    var win = window.open(waUrl, '_blank');
+    if (!win) {
+      window.location.href = waUrl;
+    }
+  }, 600);
 }
 
 function resetRsvpForm() {

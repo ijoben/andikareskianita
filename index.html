@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css?v=20260912_4">
+  <link rel="stylesheet" href="css/style.css?v=20260912_5">
 </head>
 <body>
   <div class="flower-petals" id="flower-petals"></div>
@@ -119,8 +119,13 @@
         <div id="rsvp-success" class="rsvp-success hidden" style="display: none;">
           <i class="fas fa-check-circle"></i>
           <h3>Terima Kasih!</h3>
-          <p>Konfirmasi kehadiran Anda telah kami terima.</p>
-          <button type="button" class="btn-rsvp-again" onclick="resetRsvpForm()"><i class="fas fa-redo"></i> Kirim Konfirmasi Lain</button>
+          <p>Konfirmasi kehadiran Anda telah kami terima dan ucapan Anda otomatis ditampilkan pada section Ucapan &amp; Doa di bawah.</p>
+          <div style="margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a id="btn-open-wa" class="btn-rsvp-wa" href="#" target="_blank">
+              <i class="fab fa-whatsapp"></i> Kirim Pesan ke WhatsApp Mempelai
+            </a>
+            <button type="button" class="btn-rsvp-again" onclick="resetRsvpForm()"><i class="fas fa-redo"></i> Kirim Konfirmasi Lain</button>
+          </div>
         </div>
       </div>
     </section>
@@ -191,8 +196,8 @@
   </div>
 
   <audio id="bg-music" src="assets/audio/music.mp3" loop preload="auto"></audio>
-  <script src="js/supabase-config.js?v=20260912_4"></script>
-  <script src="js/data.js?v=20260912_4"></script>
-  <script src="js/app.js?v=20260912_4"></script>
+  <script src="js/supabase-config.js?v=20260912_5"></script>
+  <script src="js/data.js?v=20260912_5"></script>
+  <script src="js/app.js?v=20260912_5"></script>
 </body>
 </html>

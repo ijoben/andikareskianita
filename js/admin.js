@@ -124,6 +124,7 @@ function loadCouple() {
   if ($('bride-mother')) $('bride-mother').value = bride.mother || '';
   if ($('couple-quote')) $('couple-quote').value = couple.quote || '';
   if ($('couple-quote-source')) $('couple-quote-source').value = couple.quoteSource || '';
+  if ($('couple-whatsapp')) $('couple-whatsapp').value = couple.whatsapp || '';
   // Show photo previews
   if (groom.photo) {
     var gc = $('groom-photo-current');
@@ -152,7 +153,8 @@ async function saveCouple() {
       photo: (adminData.couple || {}).bride ? (adminData.couple.bride.photo || '') : ''
     },
     quote: $('couple-quote').value.trim(),
-    quoteSource: $('couple-quote-source').value.trim()
+    quoteSource: $('couple-quote-source').value.trim(),
+    whatsapp: $('couple-whatsapp') ? $('couple-whatsapp').value.trim() : ((adminData.couple || {}).whatsapp || '')
   };
   // Handle photo uploads
   var groomFile = $('groom-photo-file');
