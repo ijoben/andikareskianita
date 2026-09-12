@@ -874,9 +874,35 @@ document.addEventListener('DOMContentLoaded', function() {
   var btnSaveQris = $('btn-save-qris');
   if (btnSaveQris) btnSaveQris.addEventListener('click', saveQris);
 
-  // Couple save
+  // Couple save & instant photo previews
   var btnSaveCouple = $('btn-save-couple');
   if (btnSaveCouple) btnSaveCouple.addEventListener('click', saveCouple);
+  var groomFileInput = $('groom-photo-file');
+  if (groomFileInput) {
+    groomFileInput.addEventListener('change', function() {
+      if (groomFileInput.files && groomFileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var gc = $('groom-photo-current');
+          if (gc) gc.innerHTML = '<img src="' + e.target.result + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:5px"><p style="font-size:11px;color:#27ae60;font-weight:600">Foto dipilih (klik Simpan di bawah untuk simpan ke Supabase)</p>';
+        };
+        reader.readAsDataURL(groomFileInput.files[0]);
+      }
+    });
+  }
+  var brideFileInput = $('bride-photo-file');
+  if (brideFileInput) {
+    brideFileInput.addEventListener('change', function() {
+      if (brideFileInput.files && brideFileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var bc = $('bride-photo-current');
+          if (bc) bc.innerHTML = '<img src="' + e.target.result + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:5px"><p style="font-size:11px;color:#27ae60;font-weight:600">Foto dipilih (klik Simpan di bawah untuk simpan ke Supabase)</p>';
+        };
+        reader.readAsDataURL(brideFileInput.files[0]);
+      }
+    });
+  }
 
   // Events save
   var btnSaveEvents = $('btn-save-events');

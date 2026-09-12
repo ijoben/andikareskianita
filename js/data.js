@@ -60,20 +60,38 @@ async function setConfig(key, value) {
   } catch (e) { console.error('setConfig error:', key, e); throw e; }
 }
 
-// Load all config data (fast parallel loading via Promise.all)
+// Load all config data (fast single bulk query from Supabase)
 async function loadAllConfig() {
   var result = {};
   var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening'];
+
+  // 1. Initialize with default fallback
+  keys.forEach(function(k) {
+    result[k] = JSON.parse(JSON.stringify(DEFAULT_DATA[k] || {}));
+  });
+
   try {
-    var values = await Promise.all(keys.map(function(k) { return getConfig(k); }));
-    for (var i = 0; i < keys.length; i++) {
-      result[keys[i]] = values[i] || JSON.parse(JSON.stringify(DEFAULT_DATA[keys[i]] || {}));
+    // 2. Fetch all config rows in 1 single HTTP GET request!
+    var rows = await sbGet('config', 'select=key,value');
+    if (Array.isArray(rows)) {
+      rows.forEach(function(row) {
+        if (row && row.key && row.value !== undefined && row.value !== null) {
+          result[row.key] = row.value;
+        }
+      });
     }
   } catch (e) {
-    console.error('loadAllConfig error:', e);
-    keys.forEach(function(k) {
-      result[k] = JSON.parse(JSON.stringify(DEFAULT_DATA[k] || {}));
-    });
+    console.warn('loadAllConfig bulk query error, attempting individual fetch:', e);
+    try {
+      var values = await Promise.all(keys.map(function(k) { return getConfig(k); }));
+      for (var i = 0; i < keys.length; i++) {
+        if (values[i] !== null && values[i] !== undefined) {
+          result[keys[i]] = values[i];
+        }
+      }
+    } catch (err) {
+      console.error('loadAllConfig individual fallback error:', err);
+    }
   }
   return result;
 }

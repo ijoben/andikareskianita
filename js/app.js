@@ -58,7 +58,7 @@ function applyTheme(theme) {
   if (heroBgEl) {
     if (theme.heroBg) {
       heroBgEl.style.backgroundImage = "url('" + theme.heroBg + "')";
-      var heroOp = (theme.heroBgOpacity !== undefined && theme.heroBgOpacity !== null && theme.heroBgOpacity !== '') ? parseFloat(theme.heroBgOpacity) / 100 : 0.3;
+      var heroOp = (theme.heroBgOpacity !== undefined && theme.heroBgOpacity !== null && theme.heroBgOpacity !== '') ? parseFloat(theme.heroBgOpacity) / 100 : 0.45;
       heroBgEl.style.opacity = heroOp;
     } else {
       heroBgEl.style.backgroundImage = '';
@@ -176,6 +176,7 @@ function openInvitation() {
     content.classList.remove('hidden');
     content.classList.add('visible');
     startCountdown();
+    initScrollReveal();
     window.scrollTo(0, 0);
   }
 
@@ -336,7 +337,7 @@ function renderGallery(data) {
   container.innerHTML = gallery.map(function(p, i) {
     var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
     return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
-      '<img src="' + src + '" alt="Gallery ' + (i + 1) + '" loading="lazy">' +
+      '<img src="' + src + '" alt="Gallery ' + (i + 1) + '">' +
       '<div class="gallery-overlay"><span><i class="fas fa-search-plus"></i></span></div></div>';
   }).join('');
 }
@@ -711,7 +712,7 @@ async function init() {
   showLoading(true);
   try {
     weddingData = await loadAllConfig();
-    applyTheme(weddingData.theme);
+    applyTheme(weddingData.theme || {});
     renderOverlay(weddingData);
     renderHero(weddingData);
     renderCouple(weddingData);
@@ -720,31 +721,36 @@ async function init() {
     renderGallery(weddingData);
     renderQRIS(weddingData);
     initMusic(); // Re-sync in case custom music data was loaded from Supabase
-
-    // Load RSVP and Wishes from separate tables
-    var rsvps = await getRsvps();
-    renderRsvpList(rsvps);
-    var wishes = await getWishes();
-    renderWishes(wishes);
-
-    // Event listeners
-    var rsvpForm = $('rsvp-form');
-    if (rsvpForm) rsvpForm.addEventListener('submit', submitRsvp);
-    var wishForm = $('wish-form');
-    if (wishForm) wishForm.addEventListener('submit', submitWish);
-    var lbClose = $('lightbox-close');
-    if (lbClose) lbClose.addEventListener('click', closeLightbox);
-    var lbPrev = $('lightbox-prev');
-    if (lbPrev) lbPrev.addEventListener('click', function() { navLightbox(-1); });
-    var lbNext = $('lightbox-next');
-    if (lbNext) lbNext.addEventListener('click', function() { navLightbox(1); });
-    var lb = $('lightbox');
-    if (lb) lb.addEventListener('click', function(e) { if (e.target.id === 'lightbox') closeLightbox(); });
+    initScrollReveal();
   } catch (err) {
     console.error('Init error:', err);
     showToast('Gagal memuat data. Pastikan Supabase sudah dikonfigurasi.');
+  } finally {
+    showLoading(false);
   }
-  showLoading(false);
+
+  // Load RSVP and Wishes asynchronously in background without blocking page render
+  getRsvps().then(function(rsvps) {
+    renderRsvpList(rsvps);
+  }).catch(function(e) { console.warn('getRsvps error:', e); });
+
+  getWishes().then(function(wishes) {
+    renderWishes(wishes);
+  }).catch(function(e) { console.warn('getWishes error:', e); });
+
+  // Event listeners
+  var rsvpForm = $('rsvp-form');
+  if (rsvpForm) rsvpForm.addEventListener('submit', submitRsvp);
+  var wishForm = $('wish-form');
+  if (wishForm) wishForm.addEventListener('submit', submitWish);
+  var lbClose = $('lightbox-close');
+  if (lbClose) lbClose.addEventListener('click', closeLightbox);
+  var lbPrev = $('lightbox-prev');
+  if (lbPrev) lbPrev.addEventListener('click', function() { navLightbox(-1); });
+  var lbNext = $('lightbox-next');
+  if (lbNext) lbNext.addEventListener('click', function() { navLightbox(1); });
+  var lb = $('lightbox');
+  if (lb) lb.addEventListener('click', function(e) { if (e.target.id === 'lightbox') closeLightbox(); });
 }
 
 document.addEventListener('DOMContentLoaded', init);
