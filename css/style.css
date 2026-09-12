@@ -56,10 +56,18 @@ body {
   background: linear-gradient(135deg, #2d1520 0%, #4a1942 50%, #2d1520 100%);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.8s ease;
+  overflow: hidden;
+}
+.open-bg-overlay {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  pointer-events: none; z-index: 0;
+  transition: opacity 0.4s ease;
 }
 .open-envelope {
   text-align: center; color: var(--white);
   padding: 40px; max-width: 500px;
+  position: relative; z-index: 2;
 }
 .envelope-icon {
   font-size: 60px; margin-bottom: 20px;
@@ -201,6 +209,12 @@ body {
   padding: 80px 20px; position: relative;
   overflow: hidden;
 }
+.section-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  pointer-events: none; z-index: 0;
+  transition: opacity 0.4s ease;
+}
 .section-ornament {
   position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
   width: 38px; height: 38px; border-radius: 50%;
@@ -217,6 +231,7 @@ body {
 }
 .container {
   max-width: 900px; margin: 0 auto;
+  position: relative; z-index: 2;
 }
 .empty-text {
   text-align: center; color: #999;

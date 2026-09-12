@@ -53,41 +53,66 @@ function applyTheme(theme) {
   if (theme.bodyBg) r.style.setProperty('--light-bg', theme.bodyBg);
   if (theme.bodyText) r.style.setProperty('--text', theme.bodyText);
   // Hero background
-  if (theme.heroBg) {
-    var heroEl = $('hero');
-    if (heroEl) {
-      heroEl.style.backgroundImage = "url('" + theme.heroBg + "')";
-      heroEl.style.backgroundSize = 'cover';
-      heroEl.style.backgroundPosition = 'center';
+  var heroBgEl = document.querySelector('#hero .hero-bg');
+  if (heroBgEl) {
+    if (theme.heroBg) {
+      heroBgEl.style.backgroundImage = "url('" + theme.heroBg + "')";
+      var heroOp = (theme.heroBgOpacity !== undefined && theme.heroBgOpacity !== null && theme.heroBgOpacity !== '') ? parseFloat(theme.heroBgOpacity) / 100 : 0.3;
+      heroBgEl.style.opacity = heroOp;
+    } else {
+      heroBgEl.style.backgroundImage = '';
     }
   }
   // Section backgrounds
-  if (theme.coupleBg) applySectionBg('couple', theme.coupleBg);
-  if (theme.storyBg) applySectionBg('story', theme.storyBg);
-  if (theme.eventsBg) applySectionBg('events', theme.eventsBg);
-  if (theme.galleryBg) applySectionBg('gallery', theme.galleryBg);
-  if (theme.rsvpBg) applySectionBg('rsvp', theme.rsvpBg);
+  applySectionBg('couple', theme.coupleBg, theme.coupleBgOpacity);
+  applySectionBg('story', theme.storyBg, theme.storyBgOpacity);
+  applySectionBg('events', theme.eventsBg, theme.eventsBgOpacity);
+  applySectionBg('gallery', theme.galleryBg, theme.galleryBgOpacity);
+  applySectionBg('rsvp', theme.rsvpBg, theme.rsvpBgOpacity);
+  applySectionBg('qris', theme.qrisBg, theme.qrisBgOpacity);
 }
 
-function applySectionBg(sectionId, url) {
-  if (!url) return;
+function applySectionBg(sectionId, url, opacity) {
   var el = $(sectionId);
   if (!el) return;
-  el.style.backgroundImage = "url('" + url + "')";
-  el.style.backgroundSize = 'cover';
-  el.style.backgroundPosition = 'center';
-  el.style.backgroundAttachment = 'fixed';
+  var existingBg = el.querySelector(':scope > .section-bg');
+  if (!url) {
+    if (existingBg) existingBg.remove();
+    return;
+  }
+  if (!existingBg) {
+    existingBg = document.createElement('div');
+    existingBg.className = 'section-bg';
+    el.insertBefore(existingBg, el.firstChild);
+  }
+  existingBg.style.backgroundImage = "url('" + url + "')";
+  var op = (opacity !== undefined && opacity !== null && opacity !== '') ? parseFloat(opacity) / 100 : 0.15;
+  existingBg.style.opacity = op;
 }
 
 // ── Overlay ──────────────────────────────────────────────────
 function renderOverlay(data) {
   var t = data.theme || {};
-  if (t.openBg) {
-    var ol = $('open-overlay');
-    if (ol) {
-      ol.style.backgroundImage = "url('" + t.openBg + "')";
-      ol.style.backgroundSize = 'cover';
-      ol.style.backgroundPosition = 'center';
+  var ol = $('open-overlay');
+  if (ol) {
+    var olBg = ol.querySelector('.open-bg-overlay');
+    if (!olBg) {
+      olBg = document.createElement('div');
+      olBg.className = 'open-bg-overlay';
+      olBg.style.position = 'absolute';
+      olBg.style.inset = '0';
+      olBg.style.backgroundSize = 'cover';
+      olBg.style.backgroundPosition = 'center';
+      olBg.style.pointerEvents = 'none';
+      olBg.style.zIndex = '0';
+      ol.insertBefore(olBg, ol.firstChild);
+    }
+    if (t.openBg) {
+      olBg.style.backgroundImage = "url('" + t.openBg + "')";
+      var openOp = (t.openBgOpacity !== undefined && t.openBgOpacity !== null && t.openBgOpacity !== '') ? parseFloat(t.openBgOpacity) / 100 : 0.4;
+      olBg.style.opacity = openOp;
+    } else {
+      olBg.style.backgroundImage = '';
     }
   }
   var couple = data.couple || {};

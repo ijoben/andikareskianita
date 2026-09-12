@@ -143,20 +143,128 @@
           </div>
         </div>
         <div class="form-card">
-          <h3><i class="fas fa-image"></i> Background Utama</h3>
-          <div class="form-group"><label>Hero Background</label><div class="bg-preview" id="hero-bg-preview"></div><input type="file" id="theme-hero-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" id="btn-hero-bg"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" id="btn-hero-bg-rm"><i class="fas fa-trash"></i> Hapus</button></div></div>
-          <div class="form-group"><label>Overlay Background (Opening)</label><div class="bg-preview" id="open-bg-preview"></div><input type="file" id="theme-open-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" id="btn-open-bg"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" id="btn-open-bg-rm"><i class="fas fa-trash"></i> Hapus</button></div></div>
-        </div>
-        <div class="form-card">
-          <h3><i class="fas fa-images"></i> Background Per Section</h3>
-          <p class="help-text">Upload gambar background untuk tiap section. Akan diberi overlay gelap otomatis.</p>
-          <div class="section-bgs-grid">
-            <div class="form-group"><label>Section Mempelai</label><div class="bg-preview sm" id="couple-bg-preview"></div><input type="file" id="theme-couple-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-couple-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-couple-bg-rm"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Love Story</label><div class="bg-preview sm" id="story-bg-preview"></div><input type="file" id="theme-story-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-story-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-story-bg-rm"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Acara</label><div class="bg-preview sm" id="events-bg-preview"></div><input type="file" id="theme-events-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-events-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-events-bg-rm"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Galeri</label><div class="bg-preview sm" id="gallery-bg-preview"></div><input type="file" id="theme-gallery-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-gallery-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-gallery-bg-rm"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section RSVP</label><div class="bg-preview sm" id="rsvp-bg-preview"></div><input type="file" id="theme-rsvp-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-rsvp-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-rsvp-bg-rm"><i class="fas fa-trash"></i></button></div></div>
+          <h3><i class="fas fa-image"></i> Background Utama &amp; Transparansi</h3>
+          <p class="help-text">Atur gambar dan tingkat transparansi/kecerahan (opacity) background utama.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Hero Background</label>
+              <div class="bg-preview" id="hero-bg-preview"></div>
+              <input type="file" id="theme-hero-bg" accept="image/*">
+              <div class="bg-actions" style="margin-top:6px;">
+                <button class="btn-save sm" id="btn-hero-bg"><i class="fas fa-upload"></i> Upload</button>
+                <button class="btn-outline sm" id="btn-hero-bg-rm"><i class="fas fa-trash"></i> Hapus</button>
+              </div>
+              <div style="margin-top:10px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:600;">
+                  <span>Transparansi Hero</span>
+                  <span id="hero-opacity-val" style="color:#d4648a;">30%</span>
+                </div>
+                <input type="range" id="theme-hero-bg-opacity" min="0" max="100" value="30" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Overlay Background (Opening)</label>
+              <div class="bg-preview" id="open-bg-preview"></div>
+              <input type="file" id="theme-open-bg" accept="image/*">
+              <div class="bg-actions" style="margin-top:6px;">
+                <button class="btn-save sm" id="btn-open-bg"><i class="fas fa-upload"></i> Upload</button>
+                <button class="btn-outline sm" id="btn-open-bg-rm"><i class="fas fa-trash"></i> Hapus</button>
+              </div>
+              <div style="margin-top:10px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:600;">
+                  <span>Transparansi Opening</span>
+                  <span id="open-opacity-val" style="color:#d4648a;">40%</span>
+                </div>
+                <input type="range" id="theme-open-bg-opacity" min="0" max="100" value="40" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="fas fa-images"></i> Background &amp; Transparansi Per Section</h3>
+          <p class="help-text">Upload foto background tiap section dan atur transparansi sesuai kebutuhan agar teks tetap terbaca jelas.</p>
+          <div class="section-bgs-grid">
+            <div class="form-group">
+              <label>Section Mempelai</label>
+              <div class="bg-preview sm" id="couple-bg-preview"></div>
+              <input type="file" id="theme-couple-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-couple-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-couple-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="couple-opacity-val" style="color:#d4648a;">15%</span>
+                </div>
+                <input type="range" id="theme-couple-bg-opacity" min="0" max="100" value="15" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Section Love Story</label>
+              <div class="bg-preview sm" id="story-bg-preview"></div>
+              <input type="file" id="theme-story-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-story-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-story-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="story-opacity-val" style="color:#d4648a;">15%</span>
+                </div>
+                <input type="range" id="theme-story-bg-opacity" min="0" max="100" value="15" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Section Acara</label>
+              <div class="bg-preview sm" id="events-bg-preview"></div>
+              <input type="file" id="theme-events-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-events-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-events-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="events-opacity-val" style="color:#d4648a;">20%</span>
+                </div>
+                <input type="range" id="theme-events-bg-opacity" min="0" max="100" value="20" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Section Galeri</label>
+              <div class="bg-preview sm" id="gallery-bg-preview"></div>
+              <input type="file" id="theme-gallery-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-gallery-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-gallery-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="gallery-opacity-val" style="color:#d4648a;">15%</span>
+                </div>
+                <input type="range" id="theme-gallery-bg-opacity" min="0" max="100" value="15" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Section RSVP</label>
+              <div class="bg-preview sm" id="rsvp-bg-preview"></div>
+              <input type="file" id="theme-rsvp-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-rsvp-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-rsvp-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="rsvp-opacity-val" style="color:#d4648a;">15%</span>
+                </div>
+                <input type="range" id="theme-rsvp-bg-opacity" min="0" max="100" value="15" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Section QRIS / Hadiah</label>
+              <div class="bg-preview sm" id="qris-bg-preview"></div>
+              <input type="file" id="theme-qris-bg" accept="image/*">
+              <div class="bg-actions"><button class="btn-save sm" id="btn-qris-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-qris-bg-rm"><i class="fas fa-trash"></i></button></div>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;font-weight:600;">
+                  <span>Opacity</span><span id="qris-opacity-val" style="color:#d4648a;">20%</span>
+                </div>
+                <input type="range" id="theme-qris-bg-opacity" min="0" max="100" value="20" style="width:100%;accent-color:#d4648a;">
+              </div>
+            </div>
+          </div>
+          <button class="btn-save" id="btn-save-bg-settings" style="margin-top:15px;"><i class="fas fa-sliders-h"></i> Simpan Pengaturan Transparansi</button>
         </div>
         <div class="form-card">
           <h3><i class="fas fa-adjust"></i> Warna Custom</h3>

@@ -147,10 +147,54 @@ async function saveCouple() {
   }
 }
 
-function fileToBase64(file) {
+function fileToBase64(file, maxDim, quality) {
+  maxDim = maxDim || 1200;
+  quality = quality || 0.82;
   return new Promise(function(resolve, reject) {
+    if (!file) return resolve('');
+    // For non-image files (e.g. music/audio), read directly
+    if (!file.type || !file.type.startsWith('image/')) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // For image files, compress and downscale via Canvas for lightning-fast performance
     var reader = new FileReader();
-    reader.onload = function(e) { resolve(e.target.result); };
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var width = img.width;
+        var height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        var outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        if (outputType === 'image/png' && file.size < 500000) {
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        }
+      };
+      img.onerror = function() {
+        resolve(e.target.result);
+      };
+      img.src = e.target.result;
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -398,6 +442,34 @@ function loadTheme() {
   document.querySelectorAll('.theme-preset').forEach(function(p) {
     p.classList.toggle('active', p.getAttribute('data-preset') === t.preset);
   });
+
+  // Background previews & Opacity sliders
+  var bgConfig = [
+    { key: 'hero', field: 'heroBg', opField: 'heroBgOpacity', defOp: 30 },
+    { key: 'open', field: 'openBg', opField: 'openBgOpacity', defOp: 40 },
+    { key: 'couple', field: 'coupleBg', opField: 'coupleBgOpacity', defOp: 15 },
+    { key: 'story', field: 'storyBg', opField: 'storyBgOpacity', defOp: 15 },
+    { key: 'events', field: 'eventsBg', opField: 'eventsBgOpacity', defOp: 20 },
+    { key: 'gallery', field: 'galleryBg', opField: 'galleryBgOpacity', defOp: 15 },
+    { key: 'rsvp', field: 'rsvpBg', opField: 'rsvpBgOpacity', defOp: 15 },
+    { key: 'qris', field: 'qrisBg', opField: 'qrisBgOpacity', defOp: 20 }
+  ];
+
+  bgConfig.forEach(function(item) {
+    var opVal = t[item.opField] !== undefined ? t[item.opField] : item.defOp;
+    var slider = $('theme-' + item.key + '-bg-opacity');
+    var badge = $(item.key + '-opacity-val');
+    var prev = $(item.key + '-bg-preview');
+    if (slider) slider.value = opVal;
+    if (badge) badge.textContent = opVal + '%';
+    if (prev) {
+      if (t[item.field]) {
+        prev.innerHTML = '<img src="' + t[item.field] + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px;opacity:' + (opVal / 100) + ';">';
+      } else {
+        prev.innerHTML = '<span style="color:#aaa;font-size:11px;display:flex;align-items:center;justify-content:center;height:100%;">Belum diatur</span>';
+      }
+    }
+  });
 }
 
 async function saveThemeColors() {
@@ -411,9 +483,9 @@ async function saveThemeColors() {
   try {
     await setConfig('theme', theme);
     adminData.theme = theme;
-    showToast('\u2705 Warna tema disimpan!');
+    showToast('✅ Warna tema disimpan!');
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
   }
 }
 
@@ -448,27 +520,65 @@ async function applyThemePreset(preset) {
   try {
     await setConfig('theme', theme);
     adminData.theme = theme;
-    showToast('\u2705 Tema ' + preset + ' diterapkan!');
+    showToast('✅ Tema ' + preset + ' diterapkan!');
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
   }
 }
 
 async function uploadThemeBg(field) {
   var fileInput = $('theme-' + field.replace(/([A-Z])/g, '-$1').toLowerCase());
-  if (!fileInput || !fileInput.files.length) return;
+  if (!fileInput || !fileInput.files.length) {
+    showToast('⚠️ Pilih file background terlebih dahulu');
+    return;
+  }
   showLoading(true);
   try {
-    var dataUrl = await fileToBase64(fileInput.files[0]);
+    var dataUrl = await fileToBase64(fileInput.files[0], 1400, 0.82);
     var theme = adminData.theme || {};
     theme[field] = dataUrl;
     await setConfig('theme', theme);
     adminData.theme = theme;
+    fileInput.value = '';
+    loadTheme();
     showLoading(false);
-    showToast('\u2705 Background diupload!');
+    showToast('✅ Background berhasil diupload!');
   } catch (err) {
     showLoading(false);
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+async function removeThemeBg(field) {
+  if (!confirm('Hapus background ini?')) return;
+  try {
+    var theme = adminData.theme || {};
+    theme[field] = '';
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    loadTheme();
+    showToast('✅ Background dihapus!');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+async function saveThemeBgSettings() {
+  var theme = adminData.theme || {};
+  var bgKeys = ['hero', 'open', 'couple', 'story', 'events', 'gallery', 'rsvp', 'qris'];
+  bgKeys.forEach(function(k) {
+    var slider = $('theme-' + k + '-bg-opacity');
+    if (slider) {
+      theme[k + 'BgOpacity'] = parseInt(slider.value, 10);
+    }
+  });
+  try {
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    loadTheme();
+    showToast('✅ Pengaturan transparansi background disimpan!');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
   }
 }
 
@@ -778,12 +888,33 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (btnOpenBgRm) btnOpenBgRm.addEventListener('click', function() { removeThemeBg('openBg'); });
 
   // Section bg uploads
-  ['couple', 'story', 'events', 'gallery', 'rsvp'].forEach(function(section) {
+  ['couple', 'story', 'events', 'gallery', 'rsvp', 'qris'].forEach(function(section) {
     var uploadBtn = $('btn-' + section + '-bg');
     var removeBtn = $('btn-' + section + '-bg-rm');
     if (uploadBtn) uploadBtn.addEventListener('click', function() { uploadThemeBg(section + 'Bg'); });
     if (removeBtn) removeBtn.addEventListener('click', function() { removeThemeBg(section + 'Bg'); });
   });
+
+  // Background Opacity Sliders live update
+  var bgOpacityKeys = ['hero', 'open', 'couple', 'story', 'events', 'gallery', 'rsvp', 'qris'];
+  bgOpacityKeys.forEach(function(key) {
+    var slider = $('theme-' + key + '-bg-opacity');
+    var badge = $(key + '-opacity-val');
+    var prev = $(key + '-bg-preview');
+    if (slider) {
+      slider.addEventListener('input', function() {
+        if (badge) badge.textContent = slider.value + '%';
+        if (prev) {
+          var img = prev.querySelector('img');
+          if (img) img.style.opacity = slider.value / 100;
+        }
+      });
+    }
+  });
+
+  // Save Background Settings
+  var btnSaveBgSettings = $('btn-save-bg-settings');
+  if (btnSaveBgSettings) btnSaveBgSettings.addEventListener('click', saveThemeBgSettings);
 
   // Settings
   var btnExport = $('btn-export');
