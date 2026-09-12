@@ -54,6 +54,8 @@ function showPage(page) {
   if (pageEl) pageEl.classList.add('active');
   var navEl = document.querySelector('.nav-item[data-page="' + page + '"]');
   if (navEl) navEl.classList.add('active');
+  // Auto-close sidebar on mobile
+  closeSidebar();
   // Load page data
   switch (page) {
     case 'dashboard': loadDashboard(); break;
@@ -63,6 +65,7 @@ function showPage(page) {
     case 'gallery': loadGallery(); break;
     case 'music': loadMusic(); break;
     case 'theme': loadTheme(); break;
+    case 'qris': loadQris(); break;
     case 'rsvps': loadRsvps(); break;
     case 'wishes': loadWishes(); break;
   }
@@ -459,13 +462,82 @@ async function uploadThemeBg(field) {
   }
 }
 
-async function removeThemeBg(field) {
-  var theme = adminData.theme || {};
-  theme[field] = '';
+// ── Sidebar Helpers ──────────────────────────────────────────
+function openSidebar() {
+  var sb = $('sidebar');
+  var bd = $('sidebar-backdrop');
+  if (sb) sb.classList.add('open');
+  if (bd) bd.classList.add('active');
+}
+function closeSidebar() {
+  var sb = $('sidebar');
+  var bd = $('sidebar-backdrop');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.classList.remove('active');
+}
+
+// ── QRIS ─────────────────────────────────────────────────────
+function loadQris() {
+  var qris = adminData.qris || {};
+  var prev = $('qris-preview');
+  if (prev) {
+    if (qris.image) {
+      prev.innerHTML = '<img src="' + qris.image + '" style="width:100%;height:100%;object-fit:contain;">';
+    } else {
+      prev.innerHTML = '<span style="color:#aaa;font-size:13px;">Belum ada QRIS</span>';
+    }
+  }
+  if ($('qris-name-input')) $('qris-name-input').value = qris.name || '';
+  if ($('qris-note-input')) $('qris-note-input').value = qris.note || '';
+}
+
+async function uploadQris() {
+  var fileInput = $('qris-file');
+  if (!fileInput || !fileInput.files.length) {
+    showToast('\u26A0\uFE0F Pilih file gambar QRIS terlebih dahulu');
+    return;
+  }
+  showLoading(true);
   try {
-    await setConfig('theme', theme);
-    adminData.theme = theme;
-    showToast('\u2705 Background dihapus!');
+    var dataUrl = await fileToBase64(fileInput.files[0]);
+    var qris = adminData.qris || {};
+    qris.image = dataUrl;
+    await setConfig('qris', qris);
+    adminData.qris = qris;
+    fileInput.value = '';
+    loadQris();
+    showLoading(false);
+    showToast('\u2705 Gambar QRIS berhasil diupload!');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function removeQris() {
+  if (!confirm('Hapus gambar QRIS?')) return;
+  try {
+    var qris = adminData.qris || {};
+    qris.image = '';
+    await setConfig('qris', qris);
+    adminData.qris = qris;
+    loadQris();
+    showToast('\u2705 Gambar QRIS dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function saveQris() {
+  var name = $('qris-name-input') ? $('qris-name-input').value.trim() : '';
+  var note = $('qris-note-input') ? $('qris-note-input').value.trim() : '';
+  var qris = adminData.qris || {};
+  qris.name = name;
+  qris.note = note;
+  try {
+    await setConfig('qris', qris);
+    adminData.qris = qris;
+    showToast('\u2705 Data QRIS disimpan!');
   } catch (err) {
     showToast('\u274C Error: ' + err.message);
   }
@@ -622,14 +694,34 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   });
 
-  // Hamburger menu
+  // Hamburger menu & mobile sidebar drawer
   var hamburger = $('hamburger');
-  var sidebar = $('sidebar');
-  if (hamburger && sidebar) {
-    hamburger.addEventListener('click', function() {
-      sidebar.classList.toggle('open');
+  var sidebarClose = $('sidebar-close');
+  var sidebarBackdrop = $('sidebar-backdrop');
+  if (hamburger) {
+    hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openSidebar();
     });
   }
+  if (sidebarClose) {
+    sidebarClose.addEventListener('click', function() {
+      closeSidebar();
+    });
+  }
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', function() {
+      closeSidebar();
+    });
+  }
+
+  // QRIS events
+  var btnQrisUpload = $('btn-qris-upload');
+  if (btnQrisUpload) btnQrisUpload.addEventListener('click', uploadQris);
+  var btnQrisRemove = $('btn-qris-remove');
+  if (btnQrisRemove) btnQrisRemove.addEventListener('click', removeQris);
+  var btnSaveQris = $('btn-save-qris');
+  if (btnSaveQris) btnSaveQris.addEventListener('click', saveQris);
 
   // Couple save
   var btnSaveCouple = $('btn-save-couple');

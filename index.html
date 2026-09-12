@@ -18,7 +18,7 @@
       <div class="envelope-icon"><i class="fas fa-envelope-open-text"></i></div>
       <h2 class="open-to">Kepada Yth. Bapak/Ibu/Saudara/i</h2>
       <p class="open-subtitle">Mohon maaf apabila ada kesalahan penulisan nama dan gelar</p>
-      <button id="open-btn" class="open-btn"><i class="fas fa-envelope-open"></i> Buka Undangan</button>
+      <button id="open-btn" class="open-btn" onclick="openInvitation()"><i class="fas fa-envelope-open"></i> Buka Undangan</button>
     </div>
   </div>
 
@@ -29,7 +29,7 @@
     <section id="hero" class="section hero-section">
       <div class="hero-bg"></div>
       <div class="particles" id="hero-particles"></div>
-      <div class="hero-ornament">&amp;</div>
+      <div class="hero-ornament"><i class="fas fa-infinity"></i></div>
       <div class="hero-content">
         <p class="hero-subtitle reveal">The Wedding Of</p>
         <h1 class="hero-names reveal">
@@ -57,17 +57,17 @@
     </section>
 
     <section id="couple" class="section couple-section">
-      <div class="section-ornament">&hearts;</div>
+      <div class="section-ornament"><i class="fas fa-heart"></i></div>
       <div class="container">
         <h2 class="section-title reveal">Mempelai</h2>
         <div class="couple-grid">
-          <div class="couple-card reveal">
+          <div class="couple-card groom-card reveal">
             <div class="couple-photo"><img id="groom-photo" src="assets/images/groom.jpg" alt="Mempelai Pria"></div>
             <h3 class="couple-name" id="groom-name">Ahmad Rizki Pratama, S.Kom</h3>
             <p class="couple-parents" id="groom-parents">Putra dari<br>Bapak H. Muhammad Pratama<br>&amp;<br>Ibu Hj. Siti Aminah</p>
           </div>
           <div class="couple-heart reveal"><i class="fas fa-heart"></i></div>
-          <div class="couple-card reveal">
+          <div class="couple-card bride-card reveal">
             <div class="couple-photo"><img id="bride-photo" src="assets/images/bride.jpg" alt="Mempelai Wanita"></div>
             <h3 class="couple-name" id="bride-name">Fatimah Azzahra, S.Pd</h3>
             <p class="couple-parents" id="bride-parents">Putri dari<br>Bapak H. Abdullah Azzahra<br>&amp;<br>Ibu Hj. Nur Halimah</p>
@@ -81,22 +81,22 @@
     </section>
 
     <section id="story" class="section story-section">
-      <div class="section-ornament">&#10047;</div>
+      <div class="section-ornament"><i class="fas fa-book-open"></i></div>
       <div class="container"><h2 class="section-title reveal">Love Story</h2><div class="timeline" id="story-timeline"></div></div>
     </section>
 
     <section id="events" class="section events-section">
-      <div class="section-ornament">&#128141;</div>
+      <div class="section-ornament"><i class="fas fa-ring"></i></div>
       <div class="container"><h2 class="section-title reveal">Waktu &amp; Tempat</h2><div class="events-grid" id="events-grid"></div></div>
     </section>
 
     <section id="gallery" class="section gallery-section">
-      <div class="section-ornament">&#128247;</div>
+      <div class="section-ornament"><i class="fas fa-camera"></i></div>
       <div class="container"><h2 class="section-title reveal">Galeri</h2><div class="gallery-grid" id="gallery-grid"></div></div>
     </section>
 
     <section id="rsvp" class="section rsvp-section">
-      <div class="section-ornament">&#9993;</div>
+      <div class="section-ornament"><i class="fas fa-envelope"></i></div>
       <div class="container">
         <h2 class="section-title reveal">RSVP</h2>
         <p class="section-subtitle reveal">Mohon konfirmasi kehadiran Anda</p>
@@ -120,7 +120,30 @@
     </section>
 
     <section id="wishes" class="section wishes-section">
+      <div class="section-ornament"><i class="fas fa-comments"></i></div>
       <div class="container"><h2 class="section-title reveal">Ucapan &amp; Doa</h2><div class="wishes-grid" id="wishes-grid"></div></div>
+    </section>
+
+    <section id="qris" class="section qris-section">
+      <div class="section-ornament"><i class="fas fa-gift"></i></div>
+      <div class="container">
+        <h2 class="section-title reveal">Kirim Hadiah &amp; Angpao</h2>
+        <p class="section-subtitle reveal" style="color: rgba(255,255,255,0.7); max-width: 500px; margin: 0 auto 30px;">Doa restu Anda merupakan karunia terindah bagi kami. Namun jika Anda ingin memberikan tanda kasih secara digital, Anda dapat menggunakan QRIS berikut.</p>
+        <div class="qris-wrapper reveal">
+          <div class="qris-card-header">
+            <i class="fas fa-qrcode"></i>
+            <span>QRIS / Kado Digital</span>
+          </div>
+          <div class="qris-image" id="qris-image">
+            <span class="qris-placeholder">QRIS belum diupload</span>
+          </div>
+          <p class="qris-name" id="qris-name">a.n. Ahmad Rizki Pratama</p>
+          <p class="qris-text" id="qris-note">Terima kasih atas kado &amp; ucapan Anda</p>
+          <div id="qris-copy-wrapper" class="qris-copy-wrapper" style="display:none; margin-top: 15px;">
+            <button id="qris-copy-btn" class="qris-copy-btn" onclick="copyQrisNote()"><i class="far fa-copy"></i> Salin Info Rekening</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer class="footer">

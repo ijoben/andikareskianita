@@ -110,12 +110,23 @@ function renderOverlay(data) {
 function openInvitation() {
   var overlay = $('open-overlay');
   var content = $('main-content');
-  if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    setTimeout(function() {
+      overlay.style.display = 'none';
+    }, 800);
+  }
   if (content) {
     content.classList.remove('hidden');
     content.classList.add('visible');
     startCountdown();
     window.scrollTo(0, 0);
+  }
+  // Try autoplay music on user interaction
+  var audio = $('bg-music');
+  if (audio && audio.src && audio.paused) {
+    audio.play().catch(function() {});
   }
 }
 
@@ -139,6 +150,7 @@ function renderHero(data) {
 
 // ── Countdown ────────────────────────────────────────────────
 function startCountdown() {
+  if (!weddingData) return;
   var events = weddingData.events || [];
   var akad = events.find(function(e) { return e.id === 'akad'; });
   if (!akad) return;
@@ -148,7 +160,7 @@ function startCountdown() {
     var diff = target - now;
     if (diff <= 0) {
       var els = ['cd-days', 'cd-hours', 'cd-minutes', 'cd-seconds'];
-      els.forEach(function(id) { var el = $(id); if (el) el.textContent = '0'; });
+      els.forEach(function(id) { var el = $(id); if (el) el.textContent = '00'; });
       return;
     }
     var d = Math.floor(diff / 86400000);
@@ -156,10 +168,10 @@ function startCountdown() {
     var m = Math.floor((diff % 3600000) / 60000);
     var s = Math.floor((diff % 60000) / 1000);
     var de = $('cd-days'), he = $('cd-hours'), me = $('cd-minutes'), se = $('cd-seconds');
-    if (de) de.textContent = d;
-    if (he) he.textContent = h;
-    if (me) me.textContent = m;
-    if (se) se.textContent = s;
+    if (de) de.textContent = d < 10 ? '0' + d : d;
+    if (he) he.textContent = h < 10 ? '0' + h : h;
+    if (me) me.textContent = m < 10 ? '0' + m : m;
+    if (se) se.textContent = s < 10 ? '0' + s : s;
   }
   update();
   setInterval(update, 1000);
@@ -196,7 +208,7 @@ function renderStory(data) {
     return '<div class="timeline-item ' + (i % 2 === 0 ? 'left' : 'right') + '">' +
       '<div class="timeline-date">' + formatDateShort(s.date) + '</div>' +
       '<div class="timeline-content">' +
-      '<div class="timeline-icon">\u{1F495}</div>' +
+      '<div class="timeline-icon"><i class="fas fa-heart"></i></div>' +
       '<h3>' + (s.title || '') + '</h3>' +
       '<p>' + (s.description || '') + '</p>' +
       '</div></div>';
@@ -210,17 +222,17 @@ function renderEvents(data) {
   var events = data.events || [];
   if (!events.length) { container.innerHTML = '<p class="empty-text">Belum ada info acara</p>'; return; }
   container.innerHTML = events.map(function(ev) {
-    var icon = ev.id === 'akad' ? '\u{1F48D}' : '\u{1F38A}';
+    var icon = ev.id === 'akad' ? '<i class="fas fa-ring"></i>' : '<i class="fas fa-glass-cheers"></i>';
     var html = '<div class="event-card">' +
       '<div class="event-icon">' + icon + '</div>' +
       '<h3>' + (ev.title || '') + '</h3>' +
       '<div class="event-details">' +
-      '<div class="event-detail"><span>\u{1F4C5}</span><span>' + formatDate(ev.date) + '</span></div>' +
-      '<div class="event-detail"><span>\u{23F0}</span><span>' + formatTime(ev.time) + '</span></div>' +
-      '<div class="event-detail"><span>\u{1F4CD}</span><span>' + (ev.venue || '') + '</span></div>' +
-      '<div class="event-detail"><span>\u{1F4CC}</span><span>' + (ev.address || '') + '</span></div>' +
+      '<div class="event-detail"><span class="event-detail-icon"><i class="far fa-calendar-alt"></i></span><span>' + formatDate(ev.date) + '</span></div>' +
+      '<div class="event-detail"><span class="event-detail-icon"><i class="far fa-clock"></i></span><span>' + formatTime(ev.time) + '</span></div>' +
+      '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-marker-alt"></i></span><span>' + (ev.venue || '') + '</span></div>' +
+      '<div class="event-detail"><span class="event-detail-icon"><i class="fas fa-map-pin"></i></span><span>' + (ev.address || '') + '</span></div>' +
       '</div>';
-    if (ev.mapUrl) html += '<a href="' + ev.mapUrl + '" target="_blank" class="btn-map">\u{1F4CD} Lihat Peta</a>';
+    if (ev.mapUrl) html += '<a href="' + ev.mapUrl + '" target="_blank" class="btn-map"><i class="fas fa-map-marked-alt"></i> Lihat Peta</a>';
     html += '</div>';
     return html;
   }).join('');
@@ -236,7 +248,7 @@ function renderGallery(data) {
     var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
     return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
       '<img src="' + src + '" alt="Gallery ' + (i + 1) + '" loading="lazy">' +
-      '<div class="gallery-overlay"><span>\u{1F50D}</span></div></div>';
+      '<div class="gallery-overlay"><span><i class="fas fa-search-plus"></i></span></div></div>';
   }).join('');
 }
 
@@ -274,11 +286,11 @@ function renderRsvpList(rsvps) {
   if (!rsvps.length) { container.innerHTML = '<p class="empty-text">Belum ada konfirmasi</p>'; return; }
   container.innerHTML = rsvps.slice(0, 10).map(function(r) {
     var statusClass = r.attendance === 'hadir' ? 'attending' : (r.attendance === 'ragu' ? 'maybe' : 'absent');
-    var statusText = r.attendance === 'hadir' ? '\u2705 Hadir' : (r.attendance === 'ragu' ? '\u{1F914} Mungkin' : '\u274C Tidak Hadir');
+    var statusIcon = r.attendance === 'hadir' ? '<i class="fas fa-check-circle"></i> Hadir' : (r.attendance === 'ragu' ? '<i class="fas fa-question-circle"></i> Mungkin' : '<i class="fas fa-times-circle"></i> Tidak Hadir');
     return '<div class="rsvp-card ' + statusClass + '">' +
       '<div class="rsvp-avatar">' + (r.name || 'A').charAt(0) + '</div>' +
       '<div class="rsvp-info"><div class="rsvp-name">' + (r.name || '') + '</div>' +
-      '<div class="rsvp-status">' + statusText + '</div></div></div>';
+      '<div class="rsvp-status">' + statusIcon + '</div></div></div>';
   }).join('');
 }
 
@@ -288,17 +300,17 @@ async function submitRsvp(e) {
   var attendance = document.querySelector('input[name="attendance"]:checked');
   var guests = parseInt($('rsvp-guests').value) || 1;
   var message = $('rsvp-message').value.trim();
-  if (!name) { showToast('\u26A0\uFE0F Nama harus diisi!'); return; }
-  if (!attendance) { showToast('\u26A0\uFE0F Pilih kehadiran!'); return; }
+  if (!name) { showToast('Nama harus diisi!'); return; }
+  if (!attendance) { showToast('Pilih kehadiran!'); return; }
   try {
     await addRsvp({ name: name, attendance: attendance.value, guests: guests, message: message });
-    showToast('\u2705 Terima kasih atas konfirmasi Anda!');
+    showToast('Terima kasih atas konfirmasi Anda!');
     $('rsvp-form').reset();
     // Reload RSVP list
     var rsvps = await getRsvps();
     renderRsvpList(rsvps);
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('Error: ' + err.message);
   }
 }
 
@@ -323,15 +335,15 @@ async function submitWish(e) {
   e.preventDefault();
   var name = $('wish-name').value.trim();
   var message = $('wish-message').value.trim();
-  if (!name || !message) { showToast('\u26A0\uFE0F Nama dan ucapan harus diisi!'); return; }
+  if (!name || !message) { showToast('Nama dan ucapan harus diisi!'); return; }
   try {
     await addWish({ name: name, message: message });
-    showToast('\u2705 Ucapan berhasil dikirim!');
+    showToast('Ucapan berhasil dikirim!');
     $('wish-form').reset();
     var wishes = await getWishes();
     renderWishes(wishes);
   } catch (err) {
-    showToast('\u274C Error: ' + err.message);
+    showToast('Error: ' + err.message);
   }
 }
 
@@ -343,8 +355,15 @@ function initMusic() {
   var music = weddingData.music || {};
   if (music.dataUrl) audio.src = music.dataUrl;
   btn.addEventListener('click', function() {
-    if (audio.paused) { audio.play(); btn.innerHTML = '<i class="fas fa-music"></i>'; }
-    else { audio.pause(); btn.innerHTML = '<i class="fas fa-music"></i>'; btn.style.opacity = '0.5'; }
+    if (audio.paused) {
+      audio.play();
+      btn.innerHTML = '<i class="fas fa-music"></i>';
+      btn.style.opacity = '1';
+    } else {
+      audio.pause();
+      btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+      btn.style.opacity = '0.6';
+    }
   });
 }
 
@@ -394,21 +413,23 @@ function initBottomNav() {
   });
 }
 
-// ── Flower petals ────────────────────────────────────────────
+// ── Flower petals (Gentle & Slow Sakura) ─────────────────────
 function createPetals() {
   var container = $('flower-petals');
   if (!container) return;
   container.innerHTML = '';
-  var count = window.innerWidth < 768 ? 12 : 20;
+  // Subtle count: 8 on mobile, 15 on desktop for calm, luxurious ambiance
+  var count = window.innerWidth < 768 ? 8 : 15;
   for (var i = 0; i < count; i++) {
     var petal = document.createElement('div');
     petal.className = 'petal';
-    var size = Math.random() * 15 + 8;
-    var left = Math.random() * 100;
-    var delay = Math.random() * 10;
-    var duration = Math.random() * 6 + 6;
-    var drift = (Math.random() - 0.5) * 120;
-    petal.style.cssText = 'left:' + left + 'vw;width:' + size + 'px;height:' + size + 'px;' +
+    var sizeW = Math.random() * 8 + 12; // 12px to 20px
+    var sizeH = sizeW * (Math.random() * 0.4 + 1.2); // natural petal elongation
+    var left = Math.random() * 96 + 2;
+    var delay = Math.random() * 12;
+    var duration = Math.random() * 8 + 12; // slow 12-20 seconds falling
+    var drift = (Math.random() - 0.5) * 80;
+    petal.style.cssText = 'left:' + left + 'vw;width:' + sizeW + 'px;height:' + sizeH + 'px;' +
       'animation-delay:' + delay + 's;animation-duration:' + duration + 's;--drift:' + drift + 'px;';
     container.appendChild(petal);
   }
@@ -420,12 +441,12 @@ function createParticles() {
     var container = $(id);
     if (!container) return;
     container.innerHTML = '';
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < 24; i++) {
       var p = document.createElement('div');
       p.className = 'particle';
-      var size = Math.random() * 4 + 1;
+      var size = Math.random() * 3 + 1.5;
       p.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + size + 'px;height:' + size + 'px;' +
-        'animation-delay:' + (Math.random() * 8) + 's;animation-duration:' + (Math.random() * 4 + 4) + 's;';
+        'animation-delay:' + (Math.random() * 8) + 's;animation-duration:' + (Math.random() * 4 + 5) + 's;';
       container.appendChild(p);
     }
   });
@@ -450,8 +471,75 @@ function scrollToSection(id) {
   if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
+// ── QRIS & Gift ──────────────────────────────────────────────
+function renderQRIS(data) {
+  var qris = data.qris || {};
+  var imgEl = $('qris-image');
+  var nameEl = $('qris-name');
+  var noteEl = $('qris-note');
+  var copyWrap = $('qris-copy-wrapper');
+  if (imgEl) {
+    if (qris.image) {
+      imgEl.innerHTML = '<img src="' + qris.image + '" alt="QRIS Code">';
+    } else {
+      imgEl.innerHTML = '<span class="qris-placeholder"><i class="fas fa-qrcode" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4;"></i>QRIS belum diupload</span>';
+    }
+  }
+  if (nameEl) nameEl.textContent = qris.name || 'a.n. Mempelai';
+  if (noteEl) noteEl.textContent = qris.note || 'Terima kasih atas doa restu & kado Anda';
+  if (copyWrap) {
+    if (qris.note && qris.note.trim().length > 0) {
+      copyWrap.style.display = 'block';
+    } else {
+      copyWrap.style.display = 'none';
+    }
+  }
+}
+
+function copyQrisNote() {
+  var noteEl = $('qris-note');
+  if (!noteEl || !noteEl.textContent) return;
+  var text = noteEl.textContent.trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('Info rekening / catatan berhasil disalin!');
+    }).catch(function() {
+      showToast('Gagal menyalin info');
+    });
+  } else {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Info rekening / catatan berhasil disalin!');
+  }
+}
+
+// ── Immediate Button Setup ───────────────────────────────────
+// Allow instant opening without blocking on network/database
+function setupOpenButton() {
+  var openBtn = $('open-btn');
+  if (openBtn) {
+    openBtn.addEventListener('click', openInvitation);
+    openBtn.addEventListener('touchstart', function(e) {
+      // Fast touch reaction
+      openInvitation();
+    }, { passive: true });
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────
 async function init() {
+  setupOpenButton();
+  createPetals();
+  createParticles();
+  initScrollReveal();
+  initScrollBtn();
+  initBottomNav();
+
   showLoading(true);
   try {
     weddingData = await loadAllConfig();
@@ -462,20 +550,15 @@ async function init() {
     renderStory(weddingData);
     renderEvents(weddingData);
     renderGallery(weddingData);
+    renderQRIS(weddingData);
     // Load RSVP and Wishes from separate tables
     var rsvps = await getRsvps();
     renderRsvpList(rsvps);
     var wishes = await getWishes();
     renderWishes(wishes);
     initMusic();
-    initScrollBtn();
-    initBottomNav();
-    createParticles();
-    initScrollReveal();
 
     // Event listeners
-    var openBtn = $('open-btn');
-    if (openBtn) openBtn.addEventListener('click', openInvitation);
     var rsvpForm = $('rsvp-form');
     if (rsvpForm) rsvpForm.addEventListener('submit', submitRsvp);
     var wishForm = $('wish-form');
@@ -490,7 +573,7 @@ async function init() {
     if (lb) lb.addEventListener('click', function(e) { if (e.target.id === 'lightbox') closeLightbox(); });
   } catch (err) {
     console.error('Init error:', err);
-    showToast('\u274C Gagal memuat data. Pastikan Supabase sudah dikonfigurasi.');
+    showToast('Gagal memuat data. Pastikan Supabase sudah dikonfigurasi.');
   }
   showLoading(false);
 }

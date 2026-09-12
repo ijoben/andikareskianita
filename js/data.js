@@ -24,6 +24,11 @@ var DEFAULT_DATA = {
     primaryColor: '#d4648a', primaryColorLight: '#f0a5c0', primaryColorDark: '#b84670',
     darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333',
     heroBg: '', openBg: '', coupleBg: '', storyBg: '', eventsBg: '', galleryBg: '', rsvpBg: ''
+  },
+  qris: {
+    image: '',
+    name: 'a.n. Ahmad Rizki Pratama',
+    note: 'Terima kasih atas kado & ucapan Anda'
   }
 };
 
@@ -45,7 +50,7 @@ async function setConfig(key, value) {
 // Load all config data
 async function loadAllConfig() {
   var result = {};
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme'];
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris'];
   for (var i = 0; i < keys.length; i++) {
     var val = await getConfig(keys[i]);
     result[keys[i]] = val || JSON.parse(JSON.stringify(DEFAULT_DATA[keys[i]]));
@@ -55,7 +60,7 @@ async function loadAllConfig() {
 
 // Save all config data
 async function saveAllConfig(data) {
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme'];
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris'];
   for (var i = 0; i < keys.length; i++) {
     if (data[keys[i]] !== undefined) {
       await setConfig(keys[i], data[keys[i]]);

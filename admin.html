@@ -10,9 +10,15 @@
 </head>
 <body>
   <!-- No login needed - localStorage is per-browser -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
   <div class="admin-app">
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header"><i class="fas fa-heart"></i> <span>Wedding Admin</span></div>
+      <div class="sidebar-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-heart"></i> <span>Wedding Admin</span>
+        </div>
+        <button class="sidebar-close" id="sidebar-close" title="Tutup Menu"><i class="fas fa-times"></i></button>
+      </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <a href="#" class="nav-item" data-page="couple"><i class="fas fa-heart"></i> Mempelai</a>
@@ -21,6 +27,7 @@
         <a href="#" class="nav-item" data-page="stories"><i class="fas fa-book-open"></i> Love Story</a>
         <a href="#" class="nav-item" data-page="music"><i class="fas fa-music"></i> Musik</a>
         <a href="#" class="nav-item" data-page="theme"><i class="fas fa-palette"></i> Tema &amp; Background</a>
+        <a href="#" class="nav-item" data-page="qris"><i class="fas fa-qrcode"></i> QRIS</a>
         <a href="#" class="nav-item" data-page="rsvps"><i class="fas fa-user-check"></i> RSVP</a>
         <a href="#" class="nav-item" data-page="wishes"><i class="fas fa-comment-dots"></i> Ucapan</a>
         <a href="#" class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Pengaturan</a>
@@ -30,7 +37,11 @@
       </div>
     </aside>
 
-    <div class="mobile-header"><button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button><span>Wedding Admin</span><a href="index.html"><i class="fas fa-external-link-alt"></i></a></div>
+    <div class="mobile-header">
+      <button class="hamburger" id="hamburger" aria-label="Buka Menu"><i class="fas fa-bars"></i></button>
+      <span>Wedding Admin</span>
+      <a href="index.html" title="Lihat Undangan"><i class="fas fa-external-link-alt"></i></a>
+    </div>
 
     <main class="main-content">
       <section id="page-dashboard" class="page active">
@@ -158,6 +169,40 @@
             <div class="form-group"><label>Teks Body</label><input type="color" id="theme-body-text" value="#333333"></div>
           </div>
           <button class="btn-save" id="btn-save-colors"><i class="fas fa-save"></i> Simpan Warna</button>
+        </div>
+      </section>
+
+      <section id="page-qris" class="page">
+        <h2>Pengaturan QRIS &amp; Kado Digital</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-qrcode"></i> Upload Gambar QRIS</h3>
+          <p class="help-text">Upload gambar QRIS Code untuk menerima amplop/hadiah digital dari tamu undangan.</p>
+          <div class="form-group">
+            <label>Gambar QRIS</label>
+            <div class="bg-preview" id="qris-preview" style="height:220px;max-width:240px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #ddd;border-radius:12px;overflow:hidden;">
+              <span style="color:#aaa;font-size:13px;">Belum ada QRIS</span>
+            </div>
+            <input type="file" id="qris-file" accept="image/*">
+            <div class="bg-actions" style="margin-top:10px;">
+              <button class="btn-save" id="btn-qris-upload"><i class="fas fa-upload"></i> Upload QRIS</button>
+              <button class="btn-outline" id="btn-qris-remove"><i class="fas fa-trash"></i> Hapus QRIS</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="fas fa-info-circle"></i> Informasi Rekening / E-Wallet</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nama Pemilik (Atas Nama)</label>
+              <input type="text" id="qris-name-input" placeholder="a.n. Ahmad Rizki Pratama">
+            </div>
+            <div class="form-group">
+              <label>Catatan / Petunjuk / No. Rekening</label>
+              <input type="text" id="qris-note-input" placeholder="BCA: 1234567890 / Dana: 08123456789">
+            </div>
+          </div>
+          <button class="btn-save" id="btn-save-qris"><i class="fas fa-save"></i> Simpan Data QRIS</button>
         </div>
       </section>
 
