@@ -1,249 +1,498 @@
-(function(){
-var w=null,g=[],ci=0,mp=false,au=null;
-function gE(id){return document.getElementById(id)}
+/* ============================================================
+   Wedding Invitation Landing Page — Supabase Edition
+   ============================================================ */
 
-function init(){
-  gE('open-btn').onclick=openInv;
-  gE('rsvp-form').onsubmit=submitRsvp;
-  gE('music-toggle').onclick=toggleMusic;
-  gE('lightbox-close').onclick=closeLB;
-  gE('lightbox-prev').onclick=function(){ci=(ci-1+g.length)%g.length;showLB(ci)};
-  gE('lightbox-next').onclick=function(){ci=(ci+1)%g.length;showLB(ci)};
-  gE('lightbox').onclick=function(e){if(e.target===e.currentTarget)closeLB()};
-  gE('scroll-down-btn').onclick=function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
-  load();
+var weddingData = null;
+
+// ── Helpers ──────────────────────────────────────────────────
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  var d = new Date(dateStr);
+  var opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return d.toLocaleDateString('id-ID', opts);
+}
+function formatDateShort(dateStr) {
+  if (!dateStr) return '';
+  var d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function formatTime(timeStr) {
+  if (!timeStr) return '';
+  return timeStr + ' WIB';
+}
+function $(id) { return document.getElementById(id); }
+
+function showToast(msg) {
+  // Create toast if not exists
+  var t = $('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
 
-// ===== FLOWER PETALS =====
-function createFlowerPetals(count){
-  var container=gE('flower-petals');
-  if(!container)return;
-  container.innerHTML='';
-  var colors=['#f8a4c8','#f472b6','#ec4899','#f9a8d4','#fbcfe8','#fda4af','#fb7185'];
-  for(var i=0;i<count;i++){
-    var p=document.createElement('div');
-    p.className='petal';
-    var size=Math.random()*16+10;
-    var color=colors[Math.floor(Math.random()*colors.length)];
-    var opacity=(Math.random()*.3+.15).toFixed(2);
-    var duration=(Math.random()*8+8).toFixed(1);
-    var delay=(Math.random()*12).toFixed(1);
-    var drift=(Math.random()*160-80).toFixed(0);
-    var spin=(Math.random()*720-360).toFixed(0);
-    p.style.cssText='--size:'+size+'px;--opacity:'+opacity+';--duration:'+duration+'s;--delay:'+delay+'s;--drift:'+drift+'px;--spin:'+spin+'deg;left:'+Math.random()*100+'%';
-    p.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 10 12 14 12 14S16.5 10 16.5 6.5C16.5 4 14.5 2 12 2Z" fill="'+color+'"/><ellipse cx="8" cy="8" rx="4" ry="5" fill="'+color+'" opacity=".7" transform="rotate(-30 8 8)"/><ellipse cx="16" cy="8" rx="4" ry="5" fill="'+color+'" opacity=".7" transform="rotate(30 16 8)"/></svg>';
-    container.appendChild(p);
+function showLoading(show) {
+  var el = $('loading-screen');
+  if (!el) return;
+  el.style.display = show ? 'flex' : 'none';
+}
+
+// ── Theme ────────────────────────────────────────────────────
+function applyTheme(theme) {
+  if (!theme) return;
+  var r = document.documentElement;
+  if (theme.primaryColor) r.style.setProperty('--primary', theme.primaryColor);
+  if (theme.primaryColorLight) r.style.setProperty('--primary-light', theme.primaryColorLight);
+  if (theme.primaryColorDark) r.style.setProperty('--primary-dark', theme.primaryColorDark);
+  if (theme.darkBg) r.style.setProperty('--dark-bg', theme.darkBg);
+  if (theme.bodyBg) r.style.setProperty('--light-bg', theme.bodyBg);
+  if (theme.bodyText) r.style.setProperty('--text', theme.bodyText);
+  // Hero background
+  if (theme.heroBg) {
+    var heroEl = $('hero');
+    if (heroEl) {
+      heroEl.style.backgroundImage = "url('" + theme.heroBg + "')";
+      heroEl.style.backgroundSize = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+    }
+  }
+  // Section backgrounds
+  if (theme.coupleBg) applySectionBg('couple', theme.coupleBg);
+  if (theme.storyBg) applySectionBg('story', theme.storyBg);
+  if (theme.eventsBg) applySectionBg('events', theme.eventsBg);
+  if (theme.galleryBg) applySectionBg('gallery', theme.galleryBg);
+  if (theme.rsvpBg) applySectionBg('rsvp', theme.rsvpBg);
+}
+
+function applySectionBg(sectionId, url) {
+  if (!url) return;
+  var el = $(sectionId);
+  if (!el) return;
+  el.style.backgroundImage = "url('" + url + "')";
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  el.style.backgroundAttachment = 'fixed';
+}
+
+// ── Overlay ──────────────────────────────────────────────────
+function renderOverlay(data) {
+  var t = data.theme || {};
+  if (t.openBg) {
+    var ol = $('open-overlay');
+    if (ol) {
+      ol.style.backgroundImage = "url('" + t.openBg + "')";
+      ol.style.backgroundSize = 'cover';
+      ol.style.backgroundPosition = 'center';
+    }
+  }
+  var couple = data.couple || {};
+  var olNames = $('open-names');
+  if (olNames) {
+    olNames.innerHTML = '<span class="name-groom">' + (couple.groom ? couple.groom.name : 'Mempelai Pria') + '</span>' +
+      '<span class="ampersand">&</span>' +
+      '<span class="name-bride">' + (couple.bride ? couple.bride.name : 'Mempelai Wanita') + '</span>';
+  }
+  var olDate = $('open-date');
+  if (olDate) {
+    var events = data.events || [];
+    var akad = events.find(function(e) { return e.id === 'akad'; });
+    if (akad) olDate.textContent = formatDateShort(akad.date);
+  }
+  createPetals();
+}
+
+// ── Open invitation ──────────────────────────────────────────
+function openInvitation() {
+  var overlay = $('open-overlay');
+  var content = $('main-content');
+  if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+  if (content) {
+    content.classList.remove('hidden');
+    content.classList.add('visible');
+    startCountdown();
+    window.scrollTo(0, 0);
   }
 }
 
-// ===== THEME =====
-function applyTheme(theme){
-  if(!theme)return;
-  var r=document.documentElement.style;
-  if(theme.primaryColor)r.setProperty('--theme-primary',theme.primaryColor);
-  if(theme.primaryColorLight)r.setProperty('--theme-primary-light',theme.primaryColorLight);
-  if(theme.primaryColorDark)r.setProperty('--theme-primary-dark',theme.primaryColorDark);
-  if(theme.darkBg)r.setProperty('--theme-dark-bg',theme.darkBg);
-  if(theme.bodyBg)r.setProperty('--theme-body-bg',theme.bodyBg);
-  if(theme.bodyText)r.setProperty('--theme-body-text',theme.bodyText);
-  if(theme.heroBg){var hb=document.querySelector('.hero-bg');if(hb)hb.style.backgroundImage='url("'+theme.heroBg+')';}
-  if(theme.openBg){var ob=gE('open-overlay');if(ob)ob.style.background='url("'+theme.openBg+'") center/cover';}
-  var sectionBgs={couple:'couple-section',story:'story-section',events:'events-section',gallery:'gallery-section',rsvp:'rsvp-section'};
-  Object.keys(sectionBgs).forEach(function(key){
-    var url=theme[key+'Bg'];var el=document.querySelector('.'+sectionBgs[key]);
-    if(!el)return;
-    if(url){el.classList.add('section-bg');el.style.backgroundImage='url("'+url+')';}
-    else{el.classList.remove('section-bg');el.style.backgroundImage='';}
-  });
-}
-
-// ===== LOAD DATA =====
-function load(){
-  w=loadData();
-  g=w.gallery||[];
-  if(w.theme)applyTheme(w.theme);
-  updCouple();renderEvents();renderGallery();renderStories(w.stories||[]);renderWishes(w.wishes||[]);
-  initMusic();
-  createFlowerPetals(20);
-  createParticles('open-particles',8);
-  initScrollObserver();
-}
-
-function openInv(){
-  var o=gE('open-overlay');
-  o.classList.add('fade-out');
-  setTimeout(function(){
-    o.classList.add('hidden');
-    gE('main-content').classList.remove('hidden');
-    gE('scroll-down-btn').classList.remove('hidden');
-    initReveal();startCountdown();
-    createParticles('hero-particles',15);
-    if(au){au.play().catch(function(){});mp=true;updMusic()}
-  },800);
-}
-
-function createParticles(id,count){
-  var c=document.getElementById(id);if(!c)return;
-  for(var i=0;i<count;i++){
-    var p=document.createElement('div');p.className='particle';
-    var size=Math.random()*4+2;
-    p.style.width=size+'px';p.style.height=size+'px';
-    p.style.left=Math.random()*100+'%';
-    p.style.animationDuration=(Math.random()*10+10)+'s';
-    p.style.animationDelay=(Math.random()*10)+'s';
-    c.appendChild(p);
+// ── Hero ─────────────────────────────────────────────────────
+function renderHero(data) {
+  var couple = data.couple || {};
+  var groomName = couple.groom ? couple.groom.name : 'Mempelai Pria';
+  var brideName = couple.bride ? couple.bride.name : 'Mempelai Wanita';
+  var heroGroom = $('hero-groom');
+  var heroBride = $('hero-bride');
+  if (heroGroom) heroGroom.textContent = groomName;
+  if (heroBride) heroBride.textContent = brideName;
+  var events = data.events || [];
+  var akad = events.find(function(e) { return e.id === 'akad'; });
+  var heroDate = $('hero-date-text');
+  if (heroDate && akad) {
+    var d = new Date(akad.date);
+    heroDate.textContent = d.getDate() + ' \u2022 ' + (d.getMonth() + 1) + ' \u2022 ' + d.getFullYear();
   }
 }
 
-// ===== SCROLL TO SECTION =====
-window.scrollToSection=function(id){
-  var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-};
+// ── Countdown ────────────────────────────────────────────────
+function startCountdown() {
+  var events = weddingData.events || [];
+  var akad = events.find(function(e) { return e.id === 'akad'; });
+  if (!akad) return;
+  var target = new Date(akad.date + 'T' + (akad.time || '08:00') + ':00').getTime();
+  function update() {
+    var now = Date.now();
+    var diff = target - now;
+    if (diff <= 0) {
+      var els = ['cd-days', 'cd-hours', 'cd-minutes', 'cd-seconds'];
+      els.forEach(function(id) { var el = $(id); if (el) el.textContent = '0'; });
+      return;
+    }
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    var de = $('cd-days'), he = $('cd-hours'), me = $('cd-minutes'), se = $('cd-seconds');
+    if (de) de.textContent = d;
+    if (he) he.textContent = h;
+    if (me) me.textContent = m;
+    if (se) se.textContent = s;
+  }
+  update();
+  setInterval(update, 1000);
+}
 
-function initScrollObserver(){
-  var sections=['hero','couple','story','events','gallery','rsvp','wishes'];
-  var navItems=document.querySelectorAll('.bottom-nav-item');
-  var scrollBtn=gE('scroll-down-btn');
-  window.addEventListener('scroll',function(){
-    if(window.scrollY>window.innerHeight*.5){
-      scrollBtn.classList.remove('hidden');
-      scrollBtn.querySelector('i').className='fas fa-chevron-up';
-      scrollBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'})};
-    }else{scrollBtn.classList.add('hidden');}
+// ── Couple ───────────────────────────────────────────────────
+function renderCouple(data) {
+  var couple = data.couple || {};
+  var groom = couple.groom || {};
+  var bride = couple.bride || {};
+  var gp = $('groom-photo'), bp = $('bride-photo');
+  if (gp) gp.src = groom.photo || 'assets/images/groom.jpg';
+  if (bp) bp.src = bride.photo || 'assets/images/bride.jpg';
+  var gn = $('groom-name'), bn = $('bride-name');
+  if (gn) gn.innerHTML = groom.fullName || groom.name || '';
+  if (bn) bn.innerHTML = bride.fullName || bride.name || '';
+  var gpar = $('groom-parents'), bpar = $('bride-parents');
+  if (gpar) gpar.innerHTML = 'Putra dari<br>' + (groom.father || '') + '<br>&<br>' + (groom.mother || '');
+  if (bpar) bpar.innerHTML = 'Putri dari<br>' + (bride.father || '') + '<br>&<br>' + (bride.mother || '');
+  var qt = $('couple-quote-text');
+  if (qt) qt.textContent = '\u201C' + (couple.quote || '') + '\u201D';
+  var footerG = $('footer-groom'), footerB = $('footer-bride');
+  if (footerG) footerG.textContent = groom.name || '';
+  if (footerB) footerB.textContent = bride.name || '';
+}
+
+// ── Story ────────────────────────────────────────────────────
+function renderStory(data) {
+  var container = $('story-timeline');
+  if (!container) return;
+  var stories = data.stories || [];
+  if (!stories.length) { container.innerHTML = '<p class="empty-text">Belum ada cerita cinta</p>'; return; }
+  container.innerHTML = stories.map(function(s, i) {
+    return '<div class="timeline-item ' + (i % 2 === 0 ? 'left' : 'right') + '">' +
+      '<div class="timeline-date">' + formatDateShort(s.date) + '</div>' +
+      '<div class="timeline-content">' +
+      '<div class="timeline-icon">\u{1F495}</div>' +
+      '<h3>' + (s.title || '') + '</h3>' +
+      '<p>' + (s.description || '') + '</p>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ── Events ───────────────────────────────────────────────────
+function renderEvents(data) {
+  var container = $('events-grid');
+  if (!container) return;
+  var events = data.events || [];
+  if (!events.length) { container.innerHTML = '<p class="empty-text">Belum ada info acara</p>'; return; }
+  container.innerHTML = events.map(function(ev) {
+    var icon = ev.id === 'akad' ? '\u{1F48D}' : '\u{1F38A}';
+    var html = '<div class="event-card">' +
+      '<div class="event-icon">' + icon + '</div>' +
+      '<h3>' + (ev.title || '') + '</h3>' +
+      '<div class="event-details">' +
+      '<div class="event-detail"><span>\u{1F4C5}</span><span>' + formatDate(ev.date) + '</span></div>' +
+      '<div class="event-detail"><span>\u{23F0}</span><span>' + formatTime(ev.time) + '</span></div>' +
+      '<div class="event-detail"><span>\u{1F4CD}</span><span>' + (ev.venue || '') + '</span></div>' +
+      '<div class="event-detail"><span>\u{1F4CC}</span><span>' + (ev.address || '') + '</span></div>' +
+      '</div>';
+    if (ev.mapUrl) html += '<a href="' + ev.mapUrl + '" target="_blank" class="btn-map">\u{1F4CD} Lihat Peta</a>';
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+// ── Gallery ──────────────────────────────────────────────────
+function renderGallery(data) {
+  var container = $('gallery-grid');
+  if (!container) return;
+  var gallery = data.gallery || [];
+  if (!gallery.length) { container.innerHTML = '<p class="empty-text">Belum ada foto</p>'; return; }
+  container.innerHTML = gallery.map(function(p, i) {
+    var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
+    return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
+      '<img src="' + src + '" alt="Gallery ' + (i + 1) + '" loading="lazy">' +
+      '<div class="gallery-overlay"><span>\u{1F50D}</span></div></div>';
+  }).join('');
+}
+
+function openLightbox(index) {
+  var gallery = weddingData.gallery || [];
+  if (!gallery.length) return;
+  var lb = $('lightbox'), img = $('lightbox-img');
+  if (!lb || !img) return;
+  var src = typeof gallery[index] === 'string' ? gallery[index] : (gallery[index].url || gallery[index].dataUrl || '');
+  img.src = src;
+  lb.classList.remove('hidden');
+  lb.classList.add('active');
+  lb.dataset.current = index;
+}
+function closeLightbox() {
+  var lb = $('lightbox');
+  if (lb) { lb.classList.remove('active'); lb.classList.add('hidden'); }
+}
+function navLightbox(dir) {
+  var gallery = weddingData.gallery || [];
+  var lb = $('lightbox');
+  if (!lb) return;
+  var idx = parseInt(lb.dataset.current || 0) + dir;
+  if (idx < 0) idx = gallery.length - 1;
+  if (idx >= gallery.length) idx = 0;
+  openLightbox(idx);
+}
+
+// ── RSVP ─────────────────────────────────────────────────────
+function renderRsvpList(rsvps) {
+  var container = $('rsvp-list');
+  var counter = $('rsvp-count');
+  if (!container) return;
+  if (counter) counter.textContent = rsvps.length;
+  if (!rsvps.length) { container.innerHTML = '<p class="empty-text">Belum ada konfirmasi</p>'; return; }
+  container.innerHTML = rsvps.slice(0, 10).map(function(r) {
+    var statusClass = r.attendance === 'hadir' ? 'attending' : (r.attendance === 'ragu' ? 'maybe' : 'absent');
+    var statusText = r.attendance === 'hadir' ? '\u2705 Hadir' : (r.attendance === 'ragu' ? '\u{1F914} Mungkin' : '\u274C Tidak Hadir');
+    return '<div class="rsvp-card ' + statusClass + '">' +
+      '<div class="rsvp-avatar">' + (r.name || 'A').charAt(0) + '</div>' +
+      '<div class="rsvp-info"><div class="rsvp-name">' + (r.name || '') + '</div>' +
+      '<div class="rsvp-status">' + statusText + '</div></div></div>';
+  }).join('');
+}
+
+async function submitRsvp(e) {
+  e.preventDefault();
+  var name = $('rsvp-name').value.trim();
+  var attendance = document.querySelector('input[name="attendance"]:checked');
+  var guests = parseInt($('rsvp-guests').value) || 1;
+  var message = $('rsvp-message').value.trim();
+  if (!name) { showToast('\u26A0\uFE0F Nama harus diisi!'); return; }
+  if (!attendance) { showToast('\u26A0\uFE0F Pilih kehadiran!'); return; }
+  try {
+    await addRsvp({ name: name, attendance: attendance.value, guests: guests, message: message });
+    showToast('\u2705 Terima kasih atas konfirmasi Anda!');
+    $('rsvp-form').reset();
+    // Reload RSVP list
+    var rsvps = await getRsvps();
+    renderRsvpList(rsvps);
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Wishes ───────────────────────────────────────────────────
+function renderWishes(wishes) {
+  var container = $('wishes-grid');
+  var counter = $('wishes-count');
+  if (!container) return;
+  if (counter) counter.textContent = wishes.length;
+  if (!wishes.length) { container.innerHTML = '<p class="empty-text">Belum ada ucapan</p>'; return; }
+  container.innerHTML = wishes.slice(0, 20).map(function(w) {
+    return '<div class="wish-card">' +
+      '<div class="wish-avatar">' + (w.name || 'A').charAt(0) + '</div>' +
+      '<div class="wish-content"><div class="wish-name">' + (w.name || '') + '</div>' +
+      '<div class="wish-text">' + (w.message || '') + '</div>' +
+      '<div class="wish-time">' + (w.created_at ? new Date(w.created_at).toLocaleString('id-ID') : '') + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function submitWish(e) {
+  e.preventDefault();
+  var name = $('wish-name').value.trim();
+  var message = $('wish-message').value.trim();
+  if (!name || !message) { showToast('\u26A0\uFE0F Nama dan ucapan harus diisi!'); return; }
+  try {
+    await addWish({ name: name, message: message });
+    showToast('\u2705 Ucapan berhasil dikirim!');
+    $('wish-form').reset();
+    var wishes = await getWishes();
+    renderWishes(wishes);
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Music ────────────────────────────────────────────────────
+function initMusic() {
+  var audio = $('bg-music');
+  var btn = $('music-toggle');
+  if (!audio || !btn) return;
+  var music = weddingData.music || {};
+  if (music.dataUrl) audio.src = music.dataUrl;
+  btn.addEventListener('click', function() {
+    if (audio.paused) { audio.play(); btn.innerHTML = '<i class="fas fa-music"></i>'; }
+    else { audio.pause(); btn.innerHTML = '<i class="fas fa-music"></i>'; btn.style.opacity = '0.5'; }
   });
-  var observer=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
-        var id=entry.target.id;
-        navItems.forEach(function(item,i){
-          item.classList.toggle('active',['hero','couple','story','events','gallery','rsvp','wishes'][i]===id);
-        });
+}
+
+// ── Scroll to bottom button ──────────────────────────────────
+function initScrollBtn() {
+  var btn = $('scroll-down-btn');
+  if (!btn) return;
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) { btn.classList.remove('hidden'); }
+    else { btn.classList.add('hidden'); }
+    btn.innerHTML = (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100)
+      ? '<i class="fas fa-chevron-up"></i>' : '<i class="fas fa-chevron-down"></i>';
+    btn.onclick = function() {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: document.body.offsetHeight, behavior: 'smooth' });
+      }
+    };
+  });
+}
+
+// ── Bottom nav ───────────────────────────────────────────────
+function initBottomNav() {
+  var navItems = document.querySelectorAll('.bottom-nav-item');
+  navItems.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = btn.getAttribute('data-target') || btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+      if (target) {
+        var el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
       }
     });
-  },{threshold:0.3});
-  sections.forEach(function(id){var el=document.getElementById(id);if(el)observer.observe(el);});
-}
-
-// ===== DATA UPDATES =====
-function updCouple(){
-  if(!w)return;var c=w.couple,e=w.events[0];
-  gE('hero-groom').textContent=c.groom.name;
-  gE('hero-bride').textContent=c.bride.name;
-  gE('footer-groom').textContent=c.groom.name;
-  gE('footer-bride').textContent=c.bride.name;
-  if(e){
-    var d=new Date(e.date+'T'+e.time);
-    gE('hero-date-text').textContent=d.toLocaleDateString('id-ID',{day:'numeric',month:'numeric',year:'numeric'}).replace(/\//g,'\u2022');
-  }
-  if(c.groom.photo)gE('groom-photo').src=c.groom.photo;
-  gE('groom-name').textContent=c.groom.fullName;
-  gE('groom-parents').innerHTML='Putra dari<br>'+c.groom.father+'<br>&amp;<br>'+c.groom.mother;
-  if(c.bride.photo)gE('bride-photo').src=c.bride.photo;
-  gE('bride-name').textContent=c.bride.fullName;
-  gE('bride-parents').innerHTML='Putri dari<br>'+c.bride.father+'<br>&amp;<br>'+c.bride.mother;
-  gE('couple-quote-text').textContent='\u201c'+c.quote+'\u201d';
-  gE('couple-quote-source').textContent='\u2014 '+c.quoteSource;
-}
-
-function startCountdown(){
-  if(!w||!w.events[0])return;
-  var t=new Date(w.events[0].date+'T'+w.events[0].time);
-  function u(){
-    var n=new Date(),d=t-n;if(d<=0)return;
-    gE('cd-days').textContent=String(Math.floor(d/864e5)).padStart(2,'0');
-    gE('cd-hours').textContent=String(Math.floor(d%864e5/36e5)).padStart(2,'0');
-    gE('cd-minutes').textContent=String(Math.floor(d%36e5/6e4)).padStart(2,'0');
-    gE('cd-seconds').textContent=String(Math.floor(d%6e4/1e3)).padStart(2,'0');
-  }
-  u();setInterval(u,1000);
-}
-
-function renderEvents(){
-  if(!w)return;var h='';
-  w.events.forEach(function(e){
-    var d=new Date(e.date+'T'+e.time);
-    var ds=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    var ic=e.id==='akad'?'fa-ring':'fa-champagne-glasses';
-    h+='<div class="event-card reveal"><div class="event-icon"><i class="fas '+ic+'"></i></div>';
-    h+='<h3 class="event-title">'+e.title+'</h3>';
-    h+='<p class="event-datetime">'+ds+'<br>'+e.time+' - '+e.endTime+' WIB</p>';
-    h+='<p class="event-venue">'+e.venue+'</p>';
-    h+='<p class="event-address">'+e.address+'</p>';
-    h+='<a href="'+e.mapUrl+'" target="_blank" class="event-map-btn"><i class="fas fa-map-marker-alt"></i> Lihat Peta</a></div>';
   });
-  gE('events-grid').innerHTML=h;initReveal();
-}
-
-function renderGallery(){
-  var gr=gE('gallery-grid');
-  if(!g||g.length===0){gr.innerHTML='<p style="text-align:center;color:#999;grid-column:1/-1">Belum ada foto</p>';return}
-  var h='';g.forEach(function(it,i){
-    h+='<div class="gallery-item" onclick="window._lb('+i+')"><img src="'+it.photo+'" alt="'+it.caption+'">';
-    h+='<div class="gallery-caption">'+it.caption+'</div></div>';
-  });gr.innerHTML=h;
-}
-window._lb=function(i){showLB(i)};
-function showLB(i){ci=i;gE('lightbox-img').src=g[i].photo;gE('lightbox-caption').textContent=g[i].caption;gE('lightbox').classList.remove('hidden');document.body.style.overflow='hidden'}
-function closeLB(){gE('lightbox').classList.add('hidden');document.body.style.overflow=''}
-
-function renderStories(st){
-  var tl=gE('story-timeline');
-  if(!st||st.length===0){tl.innerHTML='<p style="text-align:center;color:#999">Belum ada cerita</p>';return}
-  var h='';st.forEach(function(s){
-    var d=new Date(s.date);var ds=d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-    h+='<div class="timeline-item reveal"><p class="timeline-date">'+ds+'</p>';
-    h+='<h3 class="timeline-title">'+s.title+'</h3>';
-    h+='<p class="timeline-desc">'+s.description+'</p>';
-    if(s.photo)h+='<img class="timeline-photo" src="'+s.photo+'" alt="'+s.title+'" onerror="this.style.display=\'none\'">';
-    h+='</div>';
-  });tl.innerHTML=h;initReveal();
-}
-
-function renderWishes(wi){
-  var gr=gE('wishes-grid');
-  if(!wi||wi.length===0){gr.innerHTML='<p style="text-align:center;color:#999;grid-column:1/-1">Belum ada ucapan. Jadilah yang pertama!</p>';return}
-  var h='';wi.forEach(function(w){
-    var ini=w.name.charAt(0).toUpperCase();
-    var d=new Date(w.createdAt);var ds=d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
-    h+='<div class="wish-card"><div class="wish-header"><div class="wish-avatar">'+ini+'</div>';
-    h+='<div><div class="wish-name">'+w.name+'</div><div class="wish-date">'+ds+'</div></div></div>';
-    h+='<p class="wish-message">\u201c'+w.message+'\u201d</p></div>';
-  });gr.innerHTML=h;
-}
-
-async function submitRsvp(e){
-  e.preventDefault();
-  var n=gE('rsvp-name').value.trim();
-  var at=document.querySelector('input[name="attendance"]:checked');
-  var gu=gE('rsvp-guests').value;
-  var ms=gE('rsvp-message').value.trim();
-  if(!n||!at)return alert('Nama dan kehadiran wajib diisi');
-  var data=loadData();
-  var rsvp={id:data.nextIds.rsvp++,name:n,attendance:at.value,guests:parseInt(gu)||1,message:ms,createdAt:new Date().toISOString()};
-  data.rsvps.push(rsvp);
-  if(ms){
-    var wish={id:data.nextIds.wish++,name:n,message:ms,createdAt:new Date().toISOString()};
-    data.wishes.push(wish);
-  }
-  saveData(data);
-  gE('rsvp-form').classList.add('hidden');
-  gE('rsvp-success').classList.remove('hidden');
-  w=loadData();
-  renderWishes(w.wishes);
-}
-
-function initMusic(){
-  if(!w||!w.music||!w.music.dataUrl)return;
-  au=new Audio(w.music.dataUrl);au.loop=true;au.volume=0.5;
-}
-function toggleMusic(){if(!au)return;if(mp){au.pause();mp=false}else{au.play().catch(function(){});mp=true}updMusic()}
-function updMusic(){gE('music-toggle').classList.toggle('playing',mp);gE('music-toggle').innerHTML=mp?'<i class="fas fa-volume-up"></i>':'<i class="fas fa-volume-mute"></i>';}
-
-function initReveal(){
-  document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
-    var ob=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');ob.unobserve(e.target)}})},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
-    ob.observe(el);
+  // Active state on scroll
+  var sections = ['hero', 'couple', 'story', 'events', 'gallery', 'rsvp'];
+  window.addEventListener('scroll', function() {
+    var current = 'hero';
+    sections.forEach(function(id) {
+      var el = $(id);
+      if (el && el.getBoundingClientRect().top <= 200) current = id;
+    });
+    navItems.forEach(function(btn) {
+      var target = btn.getAttribute('data-target') || '';
+      btn.classList.toggle('active', target === current);
+    });
   });
 }
-document.addEventListener('DOMContentLoaded',init);
-})();
+
+// ── Flower petals ────────────────────────────────────────────
+function createPetals() {
+  var container = $('flower-petals');
+  if (!container) return;
+  container.innerHTML = '';
+  var count = window.innerWidth < 768 ? 12 : 20;
+  for (var i = 0; i < count; i++) {
+    var petal = document.createElement('div');
+    petal.className = 'petal';
+    var size = Math.random() * 15 + 8;
+    var left = Math.random() * 100;
+    var delay = Math.random() * 10;
+    var duration = Math.random() * 6 + 6;
+    var drift = (Math.random() - 0.5) * 120;
+    petal.style.cssText = 'left:' + left + 'vw;width:' + size + 'px;height:' + size + 'px;' +
+      'animation-delay:' + delay + 's;animation-duration:' + duration + 's;--drift:' + drift + 'px;';
+    container.appendChild(petal);
+  }
+}
+
+// ── Particles ────────────────────────────────────────────────
+function createParticles() {
+  ['open-particles', 'hero-particles'].forEach(function(id) {
+    var container = $(id);
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 0; i < 30; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      var size = Math.random() * 4 + 1;
+      p.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + size + 'px;height:' + size + 'px;' +
+        'animation-delay:' + (Math.random() * 8) + 's;animation-duration:' + (Math.random() * 4 + 4) + 's;';
+      container.appendChild(p);
+    }
+  });
+}
+
+// ── Scroll reveal ────────────────────────────────────────────
+function initScrollReveal() {
+  var reveals = document.querySelectorAll('.reveal');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(function(el) { observer.observe(el); });
+}
+
+// ── Bottom nav scroll function (global) ──────────────────────
+function scrollToSection(id) {
+  var el = $(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Init ─────────────────────────────────────────────────────
+async function init() {
+  showLoading(true);
+  try {
+    weddingData = await loadAllConfig();
+    applyTheme(weddingData.theme);
+    renderOverlay(weddingData);
+    renderHero(weddingData);
+    renderCouple(weddingData);
+    renderStory(weddingData);
+    renderEvents(weddingData);
+    renderGallery(weddingData);
+    // Load RSVP and Wishes from separate tables
+    var rsvps = await getRsvps();
+    renderRsvpList(rsvps);
+    var wishes = await getWishes();
+    renderWishes(wishes);
+    initMusic();
+    initScrollBtn();
+    initBottomNav();
+    createParticles();
+    initScrollReveal();
+
+    // Event listeners
+    var openBtn = $('open-btn');
+    if (openBtn) openBtn.addEventListener('click', openInvitation);
+    var rsvpForm = $('rsvp-form');
+    if (rsvpForm) rsvpForm.addEventListener('submit', submitRsvp);
+    var wishForm = $('wish-form');
+    if (wishForm) wishForm.addEventListener('submit', submitWish);
+    var lbClose = $('lightbox-close');
+    if (lbClose) lbClose.addEventListener('click', closeLightbox);
+    var lbPrev = $('lightbox-prev');
+    if (lbPrev) lbPrev.addEventListener('click', function() { navLightbox(-1); });
+    var lbNext = $('lightbox-next');
+    if (lbNext) lbNext.addEventListener('click', function() { navLightbox(1); });
+    var lb = $('lightbox');
+    if (lb) lb.addEventListener('click', function(e) { if (e.target.id === 'lightbox') closeLightbox(); });
+  } catch (err) {
+    console.error('Init error:', err);
+    showToast('\u274C Gagal memuat data. Pastikan Supabase sudah dikonfigurasi.');
+  }
+  showLoading(false);
+}
+
+document.addEventListener('DOMContentLoaded', init);

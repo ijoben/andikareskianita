@@ -1,294 +1,700 @@
-// ===== ADMIN PANEL - localStorage based =====
-var d;
-function gE(id){return document.getElementById(id)}
-function toast(m,e){var t=gE('toast');t.textContent=m;t.className=e?'toast error':'toast';setTimeout(function(){t.className='toast hidden'},3000)}
+/* ============================================================
+   Wedding Invitation Admin Panel — Supabase Edition
+   ============================================================ */
 
-var THEME_PRESETS={
-  pink:{primaryColor:'#d4648a',primaryColorLight:'#f0a5c0',primaryColorDark:'#b84670',darkBg:'#2d1520',bodyBg:'#fff5f7',bodyText:'#333333'},
-  gold:{primaryColor:'#d4af37',primaryColorLight:'#f0d78c',primaryColorDark:'#b8960c',darkBg:'#1a1a2e',bodyBg:'#faf7f2',bodyText:'#333333'},
-  royal:{primaryColor:'#4a6fa5',primaryColorLight:'#8aabcf',primaryColorDark:'#2d4a7a',darkBg:'#122240',bodyBg:'#f5f7fa',bodyText:'#333333'},
-  sage:{primaryColor:'#7d9b76',primaryColorLight:'#b3ccad',primaryColorDark:'#5a7d52',darkBg:'#1a2a18',bodyBg:'#f7f9f6',bodyText:'#333333'},
-  lavender:{primaryColor:'#9b7fb8',primaryColorLight:'#c5b0d8',primaryColorDark:'#7a5c99',darkBg:'#1e1530',bodyBg:'#f8f5fc',bodyText:'#333333'},
-  sunset:{primaryColor:'#e07c4f',primaryColorLight:'#f0b896',primaryColorDark:'#c45a2c',darkBg:'#2a1810',bodyBg:'#fdf7f3',bodyText:'#333333'}
-};
+var adminData = {};
 
-function reload(){d=loadData();}
+// ── Helpers ──────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function showLoading(show) {
+  // Simple loading indicator
+  if (show) document.body.style.cursor = 'wait';
+  else document.body.style.cursor = '';
+}
+function showToast(msg) {
+  var t = $('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); t.classList.add('hidden'); }, 3000);
+}
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 
-// === NAVIGATION ===
-document.querySelectorAll('.nav-item[data-page]').forEach(function(el){
-  el.onclick=function(e){
-    e.preventDefault();var pg=el.dataset.page;
-    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
-    el.classList.add('active');
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
-    gE('page-'+pg).classList.add('active');
-    if(pg==='dashboard')loadDash();if(pg==='couple')loadCouple();if(pg==='events')loadEvents();
-    if(pg==='gallery')loadGallery();if(pg==='stories')loadStories();if(pg==='music')loadMusic();
-    if(pg==='theme')loadTheme();if(pg==='rsvps')loadRSVPs();if(pg==='wishes')loadWishes();
-    gE('sidebar').classList.remove('open');
+// ── Load all data ────────────────────────────────────────────
+async function loadAll() {
+  showLoading(true);
+  try {
+    adminData = await loadAllConfig();
+    // Load RSVPs and wishes
+    adminData.rsvps = await getRsvps();
+    adminData.wishes = await getWishes();
+    showLoading(false);
+    return true;
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Gagal load data: ' + err.message);
+    return false;
+  }
+}
+
+// ── Navigation ───────────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(i) { i.classList.remove('active'); });
+  var pageEl = $('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  var navEl = document.querySelector('.nav-item[data-page="' + page + '"]');
+  if (navEl) navEl.classList.add('active');
+  // Load page data
+  switch (page) {
+    case 'dashboard': loadDashboard(); break;
+    case 'couple': loadCouple(); break;
+    case 'events': loadEvents(); break;
+    case 'stories': loadStories(); break;
+    case 'gallery': loadGallery(); break;
+    case 'music': loadMusic(); break;
+    case 'theme': loadTheme(); break;
+    case 'rsvps': loadRsvps(); break;
+    case 'wishes': loadWishes(); break;
+  }
+}
+
+// ── Dashboard ────────────────────────────────────────────────
+function loadDashboard() {
+  var rsvps = adminData.rsvps || [];
+  var hadir = rsvps.filter(function(r) { return r.attendance === 'hadir'; }).length;
+  var tidak = rsvps.filter(function(r) { return r.attendance === 'tidak_hadir'; }).length;
+  var ragu = rsvps.filter(function(r) { return r.attendance === 'ragu'; }).length;
+  var eh = $('stat-hadir'), et = $('stat-tidak'), er = $('stat-ragu'), ew = $('stat-wishes');
+  if (eh) eh.textContent = hadir;
+  if (et) et.textContent = tidak;
+  if (er) er.textContent = ragu;
+  if (ew) ew.textContent = (adminData.wishes || []).length;
+}
+
+// ── Couple ───────────────────────────────────────────────────
+function loadCouple() {
+  var couple = adminData.couple || {};
+  var groom = couple.groom || {};
+  var bride = couple.bride || {};
+  if ($('groom-name')) $('groom-name').value = groom.name || '';
+  if ($('groom-full')) $('groom-full').value = groom.fullName || '';
+  if ($('groom-father')) $('groom-father').value = groom.father || '';
+  if ($('groom-mother')) $('groom-mother').value = groom.mother || '';
+  if ($('bride-name')) $('bride-name').value = bride.name || '';
+  if ($('bride-full')) $('bride-full').value = bride.fullName || '';
+  if ($('bride-father')) $('bride-father').value = bride.father || '';
+  if ($('bride-mother')) $('bride-mother').value = bride.mother || '';
+  if ($('couple-quote')) $('couple-quote').value = couple.quote || '';
+  if ($('couple-quote-source')) $('couple-quote-source').value = couple.quoteSource || '';
+  // Show photo previews
+  if (groom.photo) {
+    var gc = $('groom-photo-current');
+    if (gc) gc.innerHTML = '<img src="' + groom.photo + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:5px">';
+  }
+  if (bride.photo) {
+    var bc = $('bride-photo-current');
+    if (bc) bc.innerHTML = '<img src="' + bride.photo + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:5px">';
+  }
+}
+
+async function saveCouple() {
+  var couple = {
+    groom: {
+      name: $('groom-name').value.trim(),
+      fullName: $('groom-full').value.trim(),
+      father: $('groom-father').value.trim(),
+      mother: $('groom-mother').value.trim(),
+      photo: (adminData.couple || {}).groom ? (adminData.couple.groom.photo || '') : ''
+    },
+    bride: {
+      name: $('bride-name').value.trim(),
+      fullName: $('bride-full').value.trim(),
+      father: $('bride-father').value.trim(),
+      mother: $('bride-mother').value.trim(),
+      photo: (adminData.couple || {}).bride ? (adminData.couple.bride.photo || '') : ''
+    },
+    quote: $('couple-quote').value.trim(),
+    quoteSource: $('couple-quote-source').value.trim()
   };
-});
-gE('hamburger').onclick=function(){gE('sidebar').classList.toggle('open')};
-
-// === DASHBOARD ===
-function loadDash(){
-  reload();
-  var hadir=d.rsvps.filter(function(r){return r.attendance==='hadir'}).length;
-  var tidak=d.rsvps.filter(function(r){return r.attendance==='tidak_hadir'}).length;
-  var ragu=d.rsvps.filter(function(r){return r.attendance==='ragu'}).length;
-  gE('stat-hadir').textContent=hadir;
-  gE('stat-tidak').textContent=tidak;
-  gE('stat-ragu').textContent=ragu;
-  gE('stat-wishes').textContent=d.wishes.length;
+  // Handle photo uploads
+  var groomFile = $('groom-photo-file');
+  var brideFile = $('bride-photo-file');
+  if (groomFile && groomFile.files.length) {
+    couple.groom.photo = await fileToBase64(groomFile.files[0]);
+  }
+  if (brideFile && brideFile.files.length) {
+    couple.bride.photo = await fileToBase64(brideFile.files[0]);
+  }
+  try {
+    await setConfig('couple', couple);
+    adminData.couple = couple;
+    showToast('\u2705 Data mempelai disimpan!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
 }
 
-// === COUPLE ===
-function loadCouple(){
-  reload();var c=d.couple;
-  gE('groom-name').value=c.groom.name||'';
-  gE('groom-full').value=c.groom.fullName||'';
-  gE('groom-father').value=c.groom.father||'';
-  gE('groom-mother').value=c.groom.mother||'';
-  gE('groom-photo-current').textContent='Saat ini: '+(c.groom.photo?'Ada foto':'Tidak ada');
-  gE('bride-name').value=c.bride.name||'';
-  gE('bride-full').value=c.bride.fullName||'';
-  gE('bride-father').value=c.bride.father||'';
-  gE('bride-mother').value=c.bride.mother||'';
-  gE('bride-photo-current').textContent='Saat ini: '+(c.bride.photo?'Ada foto':'Tidak ada');
-  gE('couple-quote').value=c.quote||'';
-  gE('couple-quote-source').value=c.quoteSource||'';
-}
-gE('btn-save-couple').onclick=function(){
-  reload();
-  d.couple.groom.name=gE('groom-name').value;
-  d.couple.groom.fullName=gE('groom-full').value;
-  d.couple.groom.father=gE('groom-father').value;
-  d.couple.groom.mother=gE('groom-mother').value;
-  d.couple.bride.name=gE('bride-name').value;
-  d.couple.bride.fullName=gE('bride-full').value;
-  d.couple.bride.father=gE('bride-father').value;
-  d.couple.bride.mother=gE('bride-mother').value;
-  d.couple.quote=gE('couple-quote').value;
-  d.couple.quoteSource=gE('couple-quote-source').value;
-  // Photo upload
-  var gf=gE('groom-photo-file').files[0];
-  var bf=gE('bride-photo-file').files[0];
-  var done=0;var total=(gf?1:0)+(bf?1:0);
-  if(total===0){saveData(d);toast('Disimpan!');loadCouple();return;}
-  function check(){done++;if(done>=total){saveData(d);toast('Disimpan!');loadCouple();}}
-  if(gf){var fr=new FileReader();fr.onload=function(e){d.couple.groom.photo=e.target.result;check()};fr.readAsDataURL(gf);}
-  if(bf){var fr2=new FileReader();fr2.onload=function(e){d.couple.bride.photo=e.target.result;check()};fr2.readAsDataURL(bf);}
-};
-
-// === EVENTS ===
-function loadEvents(){
-  reload();var h='';
-  d.events.forEach(function(ev,i){
-    h+='<div class="form-card"><h3><i class="fas '+(ev.id==='akad'?'fa-ring':'fa-champagne-glasses')+'"></i> '+ev.title+'</h3>';
-    h+='<div class="form-grid">';
-    h+='<div class="form-group"><label>Tanggal</label><input type="date" id="ev-date-'+i+'" value="'+ev.date+'"></div>';
-    h+='<div class="form-group"><label>Jam Mulai</label><input type="time" id="ev-time-'+i+'" value="'+ev.time+'"></div>';
-    h+='<div class="form-group"><label>Jam Selesai</label><input type="time" id="ev-end-'+i+'" value="'+ev.endTime+'"></div>';
-    h+='<div class="form-group"><label>Venue</label><input type="text" id="ev-venue-'+i+'" value="'+ev.venue+'"></div>';
-    h+='</div>';
-    h+='<div class="form-group"><label>Alamat</label><input type="text" id="ev-address-'+i+'" value="'+ev.address+'"></div>';
-    h+='<div class="form-group"><label>Google Maps URL</label><input type="text" id="ev-map-'+i+'" value="'+ev.mapUrl+'"></div></div>';
-  });gE('events-forms').innerHTML=h;
-}
-gE('btn-save-events').onclick=function(){
-  reload();
-  d.events.forEach(function(ev,i){
-    ev.date=gE('ev-date-'+i).value;ev.time=gE('ev-time-'+i).value;
-    ev.endTime=gE('ev-end-'+i).value;ev.venue=gE('ev-venue-'+i).value;
-    ev.address=gE('ev-address-'+i).value;ev.mapUrl=gE('ev-map-'+i).value;
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-  saveData(d);toast('Acara disimpan!');
-};
+}
 
-// === GALLERY ===
-function loadGallery(){
-  reload();var items=d.gallery||[];
-  gE('gallery-list').innerHTML=items.length===0?'<p style="text-align:center;color:#999;padding:20px">Belum ada foto</p>':
-  items.map(function(it,i){
-    return '<div class="gallery-admin-item"><img src="'+it.photo+'" alt="'+it.caption+'"><div class="info"><div class="caption">'+(it.caption||'Tanpa caption')+'</div><button class="btn-delete" data-del-gallery="'+i+'"><i class="fas fa-trash"></i> Hapus</button></div></div>';
+// ── Events ───────────────────────────────────────────────────
+function loadEvents() {
+  var events = adminData.events || [];
+  var container = $('events-forms');
+  if (!container) return;
+  container.innerHTML = events.map(function(ev, i) {
+    return '<div class="form-card">' +
+      '<h3>' + (ev.id === 'akad' ? '\u{1F48D} ' : '\u{1F38A} ') + escapeHtml(ev.title) + '</h3>' +
+      '<div class="form-grid">' +
+      '<div class="form-group"><label>Tanggal</label><input type="date" id="ev-date-' + i + '" value="' + (ev.date || '') + '"></div>' +
+      '<div class="form-group"><label>Waktu Mulai</label><input type="time" id="ev-time-' + i + '" value="' + (ev.time || '') + '"></div>' +
+      '<div class="form-group"><label>Waktu Selesai</label><input type="time" id="ev-endtime-' + i + '" value="' + (ev.endTime || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-group"><label>Venue</label><input type="text" id="ev-venue-' + i + '" value="' + escapeHtml(ev.venue || '') + '"></div>' +
+      '<div class="form-group"><label>Alamat</label><input type="text" id="ev-address-' + i + '" value="' + escapeHtml(ev.address || '') + '"></div>' +
+      '<div class="form-group"><label>Google Maps URL</label><input type="url" id="ev-maps-' + i + '" value="' + escapeHtml(ev.mapUrl || '') + '"></div>' +
+      '</div>';
   }).join('');
-  document.querySelectorAll('[data-del-gallery]').forEach(function(btn){
-    btn.onclick=function(){var i=parseInt(this.dataset.delGallery);reload();d.gallery.splice(i,1);saveData(d);toast('Dihapus');loadGallery()};
-  });
 }
-gE('btn-upload-gallery').onclick=function(){
-  var f=gE('gallery-file').files[0];if(!f)return toast('Pilih file',true);
-  var fr=new FileReader();
-  fr.onload=function(e){
-    reload();
-    d.gallery=d.gallery||[];
-    d.gallery.push({id:(d.nextIds.gallery++),photo:e.target.result,caption:gE('gallery-caption').value});
-    saveData(d);toast('Foto diupload!');gE('gallery-file').value='';gE('gallery-caption').value='';loadGallery();
-  };
-  fr.readAsDataURL(f);
-};
 
-// === STORIES ===
-function loadStories(){
-  reload();var items=d.stories||[];
-  gE('stories-list').innerHTML=items.length===0?'<p style="text-align:center;color:#999;padding:20px">Belum ada cerita</p>':
-  items.map(function(s,i){
-    return '<div class="story-admin-item">'+(s.photo?'<img src="'+s.photo+'" alt="'+s.title+'">':'<div style="width:80px;height:80px;background:#f0a5c0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px">&#x1F4D6;</div>')+'<div class="story-info"><h4>'+s.title+'</h4><p>'+s.date+'</p><p class="desc">'+s.description+'</p></div><button class="btn-delete" data-del-story="'+i+'"><i class="fas fa-trash"></i> Hapus</button></div>';
-  }).join('');
-  document.querySelectorAll('[data-del-story]').forEach(function(btn){
-    btn.onclick=function(){var i=parseInt(this.dataset.delStory);reload();d.stories.splice(i,1);saveData(d);toast('Dihapus');loadStories()};
+async function saveEvents() {
+  var events = adminData.events || [];
+  var updated = events.map(function(ev, i) {
+    return {
+      id: ev.id,
+      title: ev.title,
+      date: $('ev-date-' + i).value,
+      time: $('ev-time-' + i).value,
+      endTime: $('ev-endtime-' + i).value,
+      venue: $('ev-venue-' + i).value.trim(),
+      address: $('ev-address-' + i).value.trim(),
+      mapUrl: $('ev-maps-' + i).value.trim()
+    };
   });
+  try {
+    await setConfig('events', updated);
+    adminData.events = updated;
+    showToast('\u2705 Data acara disimpan!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
 }
-gE('btn-add-story').onclick=function(){
-  var t=gE('story-title').value.trim(),dt=gE('story-date').value,ds=gE('story-desc').value.trim();
-  if(!t||!dt||!ds)return toast('Isi semua field',true);
-  var add=function(photo){
-    reload();d.stories=d.stories||[];
-    d.stories.push({id:(d.nextIds.story++),title:t,date:dt,description:ds,photo:photo||''});
-    saveData(d);toast('Cerita ditambahkan!');
-    gE('story-title').value='';gE('story-date').value='';gE('story-desc').value='';gE('story-file').value='';
+
+// ── Stories ──────────────────────────────────────────────────
+function loadStories() {
+  var stories = adminData.stories || [];
+  var container = $('stories-list');
+  if (!container) return;
+  if (!stories.length) { container.innerHTML = '<p style="text-align:center;color:#888">Belum ada cerita</p>'; return; }
+  container.innerHTML = stories.map(function(s, i) {
+    return '<div class="content-card">' +
+      '<div class="content-card-header">' +
+      '<strong>' + escapeHtml(s.title) + '</strong>' +
+      '<div class="content-card-actions">' +
+      '<button onclick="editStory(' + i + ')" class="btn btn-outline btn-sm">\u270F\uFE0F Edit</button>' +
+      '<button onclick="deleteStory(' + i + ')" class="btn btn-danger btn-sm">\u{1F5D1}\uFE0F</button>' +
+      '</div></div>' +
+      '<p>' + formatDate(s.date) + '</p>' +
+      '<p>' + escapeHtml(s.description) + '</p>' +
+      '</div>';
+  }).join('');
+}
+
+async function addStory() {
+  var title = $('story-title').value.trim();
+  var date = $('story-date').value;
+  var desc = $('story-desc').value.trim();
+  if (!title || !desc) { showToast('\u26A0\uFE0F Judul dan deskripsi harus diisi'); return; }
+  var stories = adminData.stories || [];
+  var newStory = { id: Date.now(), title: title, date: date, description: desc, photo: '' };
+  // Handle photo
+  var file = $('story-file');
+  if (file && file.files.length) {
+    newStory.photo = await fileToBase64(file.files[0]);
+  }
+  stories.push(newStory);
+  try {
+    await setConfig('stories', stories);
+    adminData.stories = stories;
+    $('story-title').value = '';
+    $('story-date').value = '';
+    $('story-desc').value = '';
+    if (file) file.value = '';
     loadStories();
-  };
-  var f=gE('story-file').files[0];
-  if(f){var fr=new FileReader();fr.onload=function(e){add(e.target.result)};fr.readAsDataURL(f);}
-  else{add();}
-};
-
-// === MUSIC ===
-function loadMusic(){
-  reload();
-  gE('music-current').textContent=d.music&&d.music.name?'Musik: '+d.music.name:'Belum ada musik';
+    showToast('\u2705 Cerita ditambahkan!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
 }
-gE('btn-upload-music').onclick=function(){
-  var f=gE('music-file').files[0];if(!f)return toast('Pilih file',true);
-  var fr=new FileReader();
-  fr.onload=function(e){
-    reload();d.music={dataUrl:e.target.result,name:f.name};
-    saveData(d);toast('Musik diupload!');gE('music-file').value='';loadMusic();
-  };
-  fr.readAsDataURL(f);
-};
-gE('btn-remove-music').onclick=function(){
-  reload();d.music={dataUrl:'',name:''};saveData(d);toast('Musik dihapus');loadMusic();
-};
 
-// === THEME ===
-function loadTheme(){
-  reload();var t=d.theme||{};
-  document.querySelectorAll('.theme-preset').forEach(function(el){
-    el.classList.toggle('active',el.dataset.preset===(t.preset||'pink'));
+async function editStory(index) {
+  var stories = adminData.stories || [];
+  var s = stories[index];
+  if (!s) return;
+  var newTitle = prompt('Judul cerita:', s.title);
+  if (newTitle === null) return;
+  var newDesc = prompt('Deskripsi:', s.description);
+  if (newDesc === null) return;
+  var newDate = prompt('Tanggal (YYYY-MM-DD):', s.date);
+  stories[index] = { id: s.id, title: newTitle, date: newDate || s.date, description: newDesc, photo: s.photo || '' };
+  try {
+    await setConfig('stories', stories);
+    adminData.stories = stories;
+    loadStories();
+    showToast('\u2705 Cerita diupdate!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function deleteStory(index) {
+  if (!confirm('Hapus cerita ini?')) return;
+  var stories = adminData.stories || [];
+  stories.splice(index, 1);
+  try {
+    await setConfig('stories', stories);
+    adminData.stories = stories;
+    loadStories();
+    showToast('\u2705 Cerita dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Gallery ──────────────────────────────────────────────────
+function loadGallery() {
+  var gallery = adminData.gallery || [];
+  var container = $('gallery-list');
+  if (!container) return;
+  if (!gallery.length) { container.innerHTML = '<p style="text-align:center;color:#888">Belum ada foto</p>'; return; }
+  container.innerHTML = gallery.map(function(p, i) {
+    var src = typeof p === 'string' ? p : (p.url || p.dataUrl || '');
+    return '<div style="display:inline-block;margin:5px;position:relative">' +
+      '<img src="' + src + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px">' +
+      '<button onclick="deleteGalleryPhoto(' + i + ')" style="position:absolute;top:2px;right:2px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px">\u{1F5D1}\uFE0F</button>' +
+      '</div>';
+  }).join('');
+}
+
+async function uploadGalleryPhoto() {
+  var file = $('gallery-file');
+  var caption = $('gallery-caption').value.trim();
+  if (!file || !file.files.length) { showToast('\u26A0\uFE0F Pilih foto terlebih dahulu'); return; }
+  showLoading(true);
+  try {
+    var gallery = adminData.gallery || [];
+    var dataUrl = await fileToBase64(file.files[0]);
+    gallery.push({ url: dataUrl, caption: caption, uploadedAt: new Date().toISOString() });
+    await setConfig('gallery', gallery);
+    adminData.gallery = gallery;
+    $('gallery-file').value = '';
+    $('gallery-caption').value = '';
+    loadGallery();
+    showLoading(false);
+    showToast('\u2705 Foto diupload!');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function deleteGalleryPhoto(index) {
+  if (!confirm('Hapus foto ini?')) return;
+  var gallery = adminData.gallery || [];
+  gallery.splice(index, 1);
+  try {
+    await setConfig('gallery', gallery);
+    adminData.gallery = gallery;
+    loadGallery();
+    showToast('\u2705 Foto dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Music ────────────────────────────────────────────────────
+function loadMusic() {
+  var music = adminData.music || {};
+  var mc = $('music-current');
+  if (mc) {
+    if (music.dataUrl) {
+      mc.innerHTML = '<audio controls src="' + music.dataUrl + '" style="width:100%"></audio><p>' + (music.name || 'Musik tersimpan') + '</p>';
+    } else {
+      mc.innerHTML = '<p style="color:#888">Belum ada musik</p>';
+    }
+  }
+}
+
+async function uploadMusic() {
+  var file = $('music-file');
+  if (!file || !file.files.length) { showToast('\u26A0\uFE0F Pilih file musik'); return; }
+  showLoading(true);
+  try {
+    var dataUrl = await fileToBase64(file.files[0]);
+    var music = { dataUrl: dataUrl, name: file.files[0].name };
+    await setConfig('music', music);
+    adminData.music = music;
+    file.value = '';
+    loadMusic();
+    showLoading(false);
+    showToast('\u2705 Musik diupload!');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function removeMusic() {
+  if (!confirm('Hapus musik?')) return;
+  try {
+    await setConfig('music', { dataUrl: '', name: '' });
+    adminData.music = { dataUrl: '', name: '' };
+    loadMusic();
+    showToast('\u2705 Musik dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Theme ────────────────────────────────────────────────────
+function loadTheme() {
+  var t = adminData.theme || {};
+  if ($('theme-primary')) $('theme-primary').value = t.primaryColor || '#d4648a';
+  if ($('theme-primary-light')) $('theme-primary-light').value = t.primaryColorLight || '#f0a5c0';
+  if ($('theme-primary-dark')) $('theme-primary-dark').value = t.primaryColorDark || '#b84670';
+  if ($('theme-dark-bg')) $('theme-dark-bg').value = t.darkBg || '#2d1520';
+  if ($('theme-body-bg')) $('theme-body-bg').value = t.bodyBg || '#fff5f7';
+  if ($('theme-body-text')) $('theme-body-text').value = t.bodyText || '#333333';
+  // Update preset selection
+  document.querySelectorAll('.theme-preset').forEach(function(p) {
+    p.classList.toggle('active', p.getAttribute('data-preset') === t.preset);
   });
-  gE('theme-primary').value=t.primaryColor||'#d4648a';
-  gE('theme-primary-light').value=t.primaryColorLight||'#f0a5c0';
-  gE('theme-primary-dark').value=t.primaryColorDark||'#b84670';
-  gE('theme-dark-bg').value=t.darkBg||'#2d1520';
-  gE('theme-body-bg').value=t.bodyBg||'#fff5f7';
-  gE('theme-body-text').value=t.bodyText||'#333333';
-  setPreview('hero-bg-preview',t.heroBg);setPreview('open-bg-preview',t.openBg);
-  setPreview('couple-bg-preview',t.coupleBg);setPreview('story-bg-preview',t.storyBg);
-  setPreview('events-bg-preview',t.eventsBg);setPreview('gallery-bg-preview',t.galleryBg);
-  setPreview('rsvp-bg-preview',t.rsvpBg);
 }
-function setPreview(id,url){var el=gE(id);if(!el)return;if(url){el.style.backgroundImage='url("'+url+')";el.textContent='';}else{el.style.backgroundImage='none';el.textContent='Default';}}
 
-// Theme presets
-document.querySelectorAll('.theme-preset').forEach(function(btn){
-  btn.onclick=function(){
-    var p=THEME_PRESETS[btn.dataset.preset];if(!p)return;
-    gE('theme-primary').value=p.primaryColor;gE('theme-primary-light').value=p.primaryColorLight;
-    gE('theme-primary-dark').value=p.primaryColorDark;gE('theme-dark-bg').value=p.darkBg;
-    gE('theme-body-bg').value=p.bodyBg;gE('theme-body-text').value=p.bodyText;
-    document.querySelectorAll('.theme-preset').forEach(function(el){el.classList.toggle('active',el===btn)});
-    reload();d.theme=Object.assign(d.theme||{},p,{preset:btn.dataset.preset});saveData(d);toast('Tema disimpan!');
+async function saveThemeColors() {
+  var theme = adminData.theme || {};
+  theme.primaryColor = $('theme-primary').value;
+  theme.primaryColorLight = $('theme-primary-light').value;
+  theme.primaryColorDark = $('theme-primary-dark').value;
+  theme.darkBg = $('theme-dark-bg').value;
+  theme.bodyBg = $('theme-body-bg').value;
+  theme.bodyText = $('theme-body-text').value;
+  try {
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    showToast('\u2705 Warna tema disimpan!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function applyThemePreset(preset) {
+  var presets = {
+    pink: { primary: '#d4648a', light: '#f0a5c0', dark: '#b84670', darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333' },
+    gold: { primary: '#d4af37', light: '#f5e6c8', dark: '#b8960c', darkBg: '#1a1a2e', bodyBg: '#fff8f0', bodyText: '#333333' },
+    royal: { primary: '#4a6fa5', light: '#a8c5da', dark: '#2d4a7a', darkBg: '#0d1b2a', bodyBg: '#f0f4f8', bodyText: '#333333' },
+    sage: { primary: '#7d9b76', light: '#d4e2d0', dark: '#5a7d52', darkBg: '#1a2e1a', bodyBg: '#f5f8f4', bodyText: '#333333' },
+    lavender: { primary: '#9b7fb8', light: '#ddd0f0', dark: '#7a5c99', darkBg: '#1e1a2e', bodyBg: '#f8f5ff', bodyText: '#333333' },
+    sunset: { primary: '#e07c4f', light: '#f5d4b5', dark: '#c45a2c', darkBg: '#2e1a0d', bodyBg: '#fff8f0', bodyText: '#333333' }
   };
+  var colors = presets[preset];
+  if (!colors) return;
+  document.querySelectorAll('.theme-preset').forEach(function(p) {
+    p.classList.toggle('active', p.getAttribute('data-preset') === preset);
+  });
+  if ($('theme-primary')) $('theme-primary').value = colors.primary;
+  if ($('theme-primary-light')) $('theme-primary-light').value = colors.light;
+  if ($('theme-primary-dark')) $('theme-primary-dark').value = colors.dark;
+  if ($('theme-dark-bg')) $('theme-dark-bg').value = colors.darkBg;
+  if ($('theme-body-bg')) $('theme-body-bg').value = colors.bodyBg;
+  if ($('theme-body-text')) $('theme-body-text').value = colors.bodyText;
+  var theme = adminData.theme || {};
+  theme.preset = preset;
+  theme.primaryColor = colors.primary;
+  theme.primaryColorLight = colors.light;
+  theme.primaryColorDark = colors.dark;
+  theme.darkBg = colors.darkBg;
+  theme.bodyBg = colors.bodyBg;
+  theme.bodyText = colors.bodyText;
+  try {
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    showToast('\u2705 Tema ' + preset + ' diterapkan!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function uploadThemeBg(field) {
+  var fileInput = $('theme-' + field.replace(/([A-Z])/g, '-$1').toLowerCase());
+  if (!fileInput || !fileInput.files.length) return;
+  showLoading(true);
+  try {
+    var dataUrl = await fileToBase64(fileInput.files[0]);
+    var theme = adminData.theme || {};
+    theme[field] = dataUrl;
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    showLoading(false);
+    showToast('\u2705 Background diupload!');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function removeThemeBg(field) {
+  var theme = adminData.theme || {};
+  theme[field] = '';
+  try {
+    await setConfig('theme', theme);
+    adminData.theme = theme;
+    showToast('\u2705 Background dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── RSVP ─────────────────────────────────────────────────────
+function loadRsvps() {
+  var rsvps = adminData.rsvps || [];
+  var tbody = $('rsvp-tbody');
+  if (!tbody) return;
+  if (!rsvps.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Belum ada RSVP</td></tr>'; return; }
+  tbody.innerHTML = rsvps.map(function(r, i) {
+    var attendance = r.attendance === 'hadir' ? '\u2705 Hadir' : (r.attendance === 'ragu' ? '\u{1F914} Ragu' : '\u274C Tidak Hadir');
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td><strong>' + escapeHtml(r.name) + '</strong></td>' +
+      '<td>' + attendance + '</td>' +
+      '<td>' + (r.guests || 1) + '</td>' +
+      '<td>' + escapeHtml(r.message || '-') + '</td>' +
+      '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-') + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+async function deleteRsvp(id) {
+  if (!confirm('Hapus RSVP ini?')) return;
+  try {
+    await deleteRsvp(id);
+    adminData.rsvps = adminData.rsvps.filter(function(r) { return r.id !== id; });
+    loadRsvps();
+    showToast('\u2705 RSVP dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Wishes ───────────────────────────────────────────────────
+function loadWishes() {
+  var wishes = adminData.wishes || [];
+  var container = $('wishes-admin-list');
+  if (!container) return;
+  if (!wishes.length) { container.innerHTML = '<p style="text-align:center;color:#888">Belum ada ucapan</p>'; return; }
+  container.innerHTML = wishes.map(function(w) {
+    return '<div class="content-card">' +
+      '<div class="content-card-header">' +
+      '<strong>' + escapeHtml(w.name) + '</strong>' +
+      '<button onclick="deleteWishById(' + w.id + ')" class="btn btn-danger btn-sm">\u{1F5D1}\uFE0F Hapus</button>' +
+      '</div>' +
+      '<p>\u201C' + escapeHtml(w.message) + '\u201D</p>' +
+      '<small style="color:#888">' + (w.created_at ? new Date(w.created_at).toLocaleString('id-ID') : '') + '</small>' +
+      '</div>';
+  }).join('');
+}
+
+async function deleteWishById(id) {
+  if (!confirm('Hapus ucapan ini?')) return;
+  try {
+    await deleteWish(id);
+    adminData.wishes = adminData.wishes.filter(function(w) { return w.id !== id; });
+    loadWishes();
+    loadDashboard();
+    showToast('\u2705 Ucapan dihapus!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Settings ─────────────────────────────────────────────────
+async function exportAllData() {
+  try {
+    var data = await exportData();
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'wedding-data-backup-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('\u2705 Data di-export!');
+  } catch (err) {
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+async function importAllData(input) {
+  var file = input.files[0];
+  if (!file) return;
+  showLoading(true);
+  try {
+    var text = await file.text();
+    var imported = JSON.parse(text);
+    if (imported.config) {
+      for (var key of Object.keys(imported.config)) {
+        await setConfig(key, imported.config[key]);
+      }
+    }
+    if (imported.rsvps) {
+      for (var r of imported.rsvps) {
+        var { id, ...rest } = r;
+        await addRsvp(rest);
+      }
+    }
+    if (imported.wishes) {
+      for (var w of imported.wishes) {
+        var { id, ...rest } = w;
+        await addWish(rest);
+      }
+    }
+    showLoading(false);
+    await loadAll();
+    showToast('\u2705 Data di-import! Refresh halaman.');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error import: ' + err.message);
+  }
+}
+
+async function resetAllData() {
+  if (!confirm('\u26A0\uFE0F Yakin ingin reset semua data ke default?')) return;
+  if (!confirm('Konfirmasi: SEMUA DATA AKAN HAPUS!')) return;
+  showLoading(true);
+  try {
+    // Delete all config
+    var allConfig = await sbGet('config', 'select=key');
+    for (var row of allConfig) {
+      await sbDelete('config', 'key=eq.' + encodeURIComponent(row.key));
+    }
+    // Delete all rsvps and wishes
+    var allRsvps = await sbGet('rsvps', 'select=id');
+    for (var r of allRsvps) { await sbDelete('rsvps', 'id=eq.' + r.id); }
+    var allWishes = await sbGet('wishes', 'select=id');
+    for (var w of allWishes) { await sbDelete('wishes', 'id=eq.' + w.id); }
+    // Re-insert defaults
+    await saveAllConfig(DEFAULT_DATA);
+    await loadAll();
+    showLoading(false);
+    showToast('\u2705 Data di-reset ke default!');
+  } catch (err) {
+    showLoading(false);
+    showToast('\u274C Error: ' + err.message);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async function() {
+  // Load data first
+  await loadAll();
+
+  // Sidebar navigation
+  document.querySelectorAll('.nav-item[data-page]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage(item.getAttribute('data-page'));
+    });
+  });
+
+  // Hamburger menu
+  var hamburger = $('hamburger');
+  var sidebar = $('sidebar');
+  if (hamburger && sidebar) {
+    hamburger.addEventListener('click', function() {
+      sidebar.classList.toggle('open');
+    });
+  }
+
+  // Couple save
+  var btnSaveCouple = $('btn-save-couple');
+  if (btnSaveCouple) btnSaveCouple.addEventListener('click', saveCouple);
+
+  // Events save
+  var btnSaveEvents = $('btn-save-events');
+  if (btnSaveEvents) btnSaveEvents.addEventListener('click', saveEvents);
+
+  // Story add
+  var btnAddStory = $('btn-add-story');
+  if (btnAddStory) btnAddStory.addEventListener('click', addStory);
+
+  // Gallery upload
+  var btnUploadGallery = $('btn-upload-gallery');
+  if (btnUploadGallery) btnUploadGallery.addEventListener('click', uploadGalleryPhoto);
+
+  // Music upload/remove
+  var btnUploadMusic = $('btn-upload-music');
+  if (btnUploadMusic) btnUploadMusic.addEventListener('click', uploadMusic);
+  var btnRemoveMusic = $('btn-remove-music');
+  if (btnRemoveMusic) btnRemoveMusic.addEventListener('click', removeMusic);
+
+  // Theme presets
+  document.querySelectorAll('.theme-preset').forEach(function(preset) {
+    preset.addEventListener('click', function() {
+      applyThemePreset(preset.getAttribute('data-preset'));
+    });
+  });
+
+  // Theme colors save
+  var btnSaveColors = $('btn-save-colors');
+  if (btnSaveColors) btnSaveColors.addEventListener('click', saveThemeColors);
+
+  // Theme background uploads
+  var btnHeroBg = $('btn-hero-bg');
+  if (btnHeroBg) btnHeroBg.addEventListener('click', function() { uploadThemeBg('heroBg'); });
+  var btnHeroBgRm = $('btn-hero-bg-rm');
+  if (btnHeroBgRm) btnHeroBgRm.addEventListener('click', function() { removeThemeBg('heroBg'); });
+
+  var btnOpenBg = $('btn-open-bg');
+  if (btnOpenBg) btnOpenBg.addEventListener('click', function() { uploadThemeBg('openBg'); });
+  var btnOpenBgRm = $('btn-open-bg-rm');
+  if (btnOpenBgRm) btnOpenBgRm.addEventListener('click', function() { removeThemeBg('openBg'); });
+
+  // Section bg uploads
+  ['couple', 'story', 'events', 'gallery', 'rsvp'].forEach(function(section) {
+    var uploadBtn = $('btn-' + section + '-bg');
+    var removeBtn = $('btn-' + section + '-bg-rm');
+    if (uploadBtn) uploadBtn.addEventListener('click', function() { uploadThemeBg(section + 'Bg'); });
+    if (removeBtn) removeBtn.addEventListener('click', function() { removeThemeBg(section + 'Bg'); });
+  });
+
+  // Settings
+  var btnExport = $('btn-export');
+  if (btnExport) btnExport.addEventListener('click', exportAllData);
+  var btnImportLabel = $('btn-import-label');
+  var btnImport = $('btn-import');
+  if (btnImportLabel && btnImport) {
+    btnImportLabel.addEventListener('click', function() { btnImport.click(); });
+    btnImport.addEventListener('change', function() { importAllData(btnImport); });
+  }
+  var btnReset = $('btn-reset');
+  if (btnReset) btnReset.addEventListener('click', resetAllData);
+
+  // Show dashboard by default
+  showPage('dashboard');
 });
-
-// Color save
-gE('btn-save-colors').onclick=function(){
-  reload();d.theme=Object.assign(d.theme||{},{
-    primaryColor:gE('theme-primary').value,primaryColorLight:gE('theme-primary-light').value,
-    primaryColorDark:gE('theme-primary-dark').value,darkBg:gE('theme-dark-bg').value,
-    bodyBg:gE('theme-body-bg').value,bodyText:gE('theme-body-text').value
-  });saveData(d);toast('Warna disimpan!');
-};
-
-// Background upload helper
-function uploadBg(field,inputId,previewId){
-  var f=gE(inputId).files[0];if(!f)return toast('Pilih gambar',true);
-  var fr=new FileReader();
-  fr.onload=function(e){
-    reload();d.theme=d.theme||{};d.theme[field]=e.target.result;
-    saveData(d);toast('Background diupload!');gE(inputId).value='';setPreview(previewId,d.theme[field]);
-  };
-  fr.readAsDataURL(f);
-}
-function removeBg(field,previewId){
-  reload();d.theme=d.theme||{};d.theme[field]='';saveData(d);setPreview(previewId,'');toast('Dihapus');
-}
-
-// Bind bg buttons
-gE('btn-hero-bg').onclick=function(){uploadBg('heroBg','theme-hero-bg','hero-bg-preview')};
-gE('btn-hero-bg-rm').onclick=function(){removeBg('heroBg','hero-bg-preview')};
-gE('btn-open-bg').onclick=function(){uploadBg('openBg','theme-open-bg','open-bg-preview')};
-gE('btn-open-bg-rm').onclick=function(){removeBg('openBg','open-bg-preview')};
-gE('btn-couple-bg').onclick=function(){uploadBg('coupleBg','theme-couple-bg','couple-bg-preview')};
-gE('btn-couple-bg-rm').onclick=function(){removeBg('coupleBg','couple-bg-preview')};
-gE('btn-story-bg').onclick=function(){uploadBg('storyBg','theme-story-bg','story-bg-preview')};
-gE('btn-story-bg-rm').onclick=function(){removeBg('storyBg','story-bg-preview')};
-gE('btn-events-bg').onclick=function(){uploadBg('eventsBg','theme-events-bg','events-bg-preview')};
-gE('btn-events-bg-rm').onclick=function(){removeBg('eventsBg','events-bg-preview')};
-gE('btn-gallery-bg').onclick=function(){uploadBg('galleryBg','theme-gallery-bg','gallery-bg-preview')};
-gE('btn-gallery-bg-rm').onclick=function(){removeBg('galleryBg','gallery-bg-preview')};
-gE('btn-rsvp-bg').onclick=function(){uploadBg('rsvpBg','theme-rsvp-bg','rsvp-bg-preview')};
-gE('btn-rsvp-bg-rm').onclick=function(){removeBg('rsvpBg','rsvp-bg-preview')};
-
-// === RSVP ===
-function loadRSVPs(){
-  reload();var items=d.rsvps||[];
-  var lb={hadir:'Hadir',tidak_hadir:'Tidak Hadir',ragu:'Ragu'};
-  gE('rsvp-tbody').innerHTML=items.length===0?'<tr><td colspan="6" style="text-align:center;color:#999">Belum ada RSVP</td></tr>':
-  items.map(function(rv,i){
-    var dt=new Date(rv.createdAt);
-    return '<tr><td>'+(i+1)+'</td><td><strong>'+rv.name+'</strong></td><td><span class="badge '+rv.attendance+'">'+(lb[rv.attendance]||rv.attendance)+'</span></td><td>'+rv.guests+'</td><td>'+(rv.message||'-')+'</td><td>'+dt.toLocaleDateString('id-ID')+'</td></tr>';
-  }).join('');
-}
-
-// === WISHES ===
-function loadWishes(){
-  reload();var items=d.wishes||[];
-  gE('wishes-admin-list').innerHTML=items.length===0?'<p style="text-align:center;color:#999;padding:20px">Belum ada ucapan</p>':
-  items.map(function(w,i){
-    return '<div class="wish-admin-item"><div class="wish-info"><div class="name">'+w.name+'</div><div class="msg">\u201c'+w.message+'\u201d</div></div><button class="btn-delete" data-del-wish="'+i+'"><i class="fas fa-trash"></i> Hapus</button></div>';
-  }).join('');
-  document.querySelectorAll('[data-del-wish]').forEach(function(btn){
-    btn.onclick=function(){var i=parseInt(this.dataset.delWish);reload();d.wishes.splice(i,1);saveData(d);toast('Dihapus');loadWishes()};
-  });
-}
-
-// === SETTINGS ===
-gE('btn-export').onclick=function(){
-  reload();
-  var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='wedding-data-'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();toast('Data di-export!');
-};
-gE('btn-import-label').onclick=function(){gE('btn-import').click()};
-gE('btn-import').onchange=function(e){
-  var f=e.target.files[0];if(!f)return;
-  var fr=new FileReader();
-  fr.onload=function(ev){
-    try{
-      var imported=JSON.parse(ev.target.result);
-      saveData(imported);toast('Data di-import!');loadDash();loadCouple();
-    }catch(err){toast('File tidak valid',true);}
-  };
-  fr.readAsText(f);
-};
-gE('btn-reset').onclick=function(){
-  if(!confirm('Yakin mau reset semua data?'))return;
-  resetData();toast('Data di-reset!');loadDash();loadCouple();
-};
-
-// === INIT ===
-reload();loadDash();

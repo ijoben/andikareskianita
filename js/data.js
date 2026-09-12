@@ -1,6 +1,5 @@
-// ===== SHARED DATA MODULE =====
-// All wedding data stored in localStorage
-var STORAGE_KEY = 'wedding_data';
+// ===== SUPABASE DATA MODULE =====
+// All wedding data stored in Supabase
 
 var DEFAULT_DATA = {
   couple: {
@@ -14,7 +13,7 @@ var DEFAULT_DATA = {
     { id: 'resepsi', title: 'Resepsi', date: '2026-10-15', time: '11:00', endTime: '14:00', venue: 'Gedung Serbaguna Trimatra', address: 'Jl. Gatot Subroto No. 12, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2420,106.8100' }
   ],
   stories: [
-    { id: 1, title: 'Pertama Bertemu', date: '2020-01-15', description: 'Kami pertama kali bertemu di kampus saat mengikuti organisasi yang sama.', photo: '' },
+    { id: 1, title: 'Pertama Bertemu', date: '2020-01-15', description: 'Kami pertama kali bertemu di kampus.', photo: '' },
     { id: 2, title: 'Makin Dekat', date: '2020-06-20', description: 'Kami mulai sering menghabiskan waktu bersama.', photo: '' },
     { id: 3, title: 'Lamaran', date: '2025-12-25', description: 'Ahmad melamar Fatimah.', photo: '' }
   ],
@@ -25,41 +24,75 @@ var DEFAULT_DATA = {
     primaryColor: '#d4648a', primaryColorLight: '#f0a5c0', primaryColorDark: '#b84670',
     darkBg: '#2d1520', bodyBg: '#fff5f7', bodyText: '#333333',
     heroBg: '', openBg: '', coupleBg: '', storyBg: '', eventsBg: '', galleryBg: '', rsvpBg: ''
-  },
-  rsvps: [],
-  wishes: [],
-  nextIds: { story: 4, gallery: 1, rsvp: 1, wish: 1 }
+  }
 };
 
-function loadData() {
+// Get config value from Supabase
+async function getConfig(key) {
   try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      var data = JSON.parse(raw);
-      // Ensure theme exists
-      if (!data.theme) data.theme = JSON.parse(JSON.stringify(DEFAULT_DATA.theme));
-      if (!data.gallery) data.gallery = [];
-      if (!data.rsvps) data.rsvps = [];
-      if (!data.wishes) data.wishes = [];
-      if (!data.music) data.music = { dataUrl: '', name: '' };
-      if (!data.nextIds) data.nextIds = { story: 4, gallery: 1, rsvp: 1, wish: 1 };
-      return data;
-    }
-  } catch (e) { console.error('Load error:', e); }
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    var data = await sbGet('config', 'eq.' + key + '&select=value');
+    return data.length > 0 ? data[0].value : null;
+  } catch (e) { console.error('getConfig error:', key, e); return null; }
 }
 
-function saveData(data) {
+// Set config value in Supabase
+async function setConfig(key, value) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    console.error('Save error:', e);
-    alert('Gagal menyimpan! Data mungkin terlalu besar.');
-    return false;
+    await sbUpsert('config', { key: key, value: value, updated_at: new Date().toISOString() });
+  } catch (e) { console.error('setConfig error:', key, e); throw e; }
+}
+
+// Load all config data
+async function loadAllConfig() {
+  var result = {};
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme'];
+  for (var i = 0; i < keys.length; i++) {
+    var val = await getConfig(keys[i]);
+    result[keys[i]] = val || JSON.parse(JSON.stringify(DEFAULT_DATA[keys[i]]));
+  }
+  return result;
+}
+
+// Save all config data
+async function saveAllConfig(data) {
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme'];
+  for (var i = 0; i < keys.length; i++) {
+    if (data[keys[i]] !== undefined) {
+      await setConfig(keys[i], data[keys[i]]);
+    }
   }
 }
 
-function resetData() {
-  localStorage.removeItem(STORAGE_KEY);
+// ===== RSVP =====
+async function getRsvps() {
+  return await sbGet('rsvps', 'order=created_at.desc');
+}
+
+async function addRsvp(rsvp) {
+  return await sbPost('rsvps', rsvp);
+}
+
+// ===== WISHES =====
+async function getWishes() {
+  return await sbGet('wishes', 'order=created_at.desc&limit=50');
+}
+
+async function addWish(wish) {
+  return await sbPost('wishes', wish);
+}
+
+async function deleteWish(id) {
+  return await sbDelete('wishes', 'id=eq.' + id);
+}
+
+async function deleteRsvp(id) {
+  return await sbDelete('rsvps', 'id=eq.' + id);
+}
+
+// ===== EXPORT/IMPORT =====
+async function exportData() {
+  var config = await loadAllConfig();
+  var rsvps = await getRsvps();
+  var wishes = await getWishes();
+  return { config: config, rsvps: rsvps, wishes: wishes };
 }
