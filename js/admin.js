@@ -2,7 +2,9 @@
    Wedding Invitation Admin Panel — Supabase Edition
    ============================================================ */
 
-var adminData = {};
+var adminData = (typeof DEFAULT_DATA !== 'undefined') ? JSON.parse(JSON.stringify(DEFAULT_DATA)) : {};
+adminData.rsvps = [];
+adminData.wishes = [];
 
 // ── Helpers ──────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -59,6 +61,7 @@ function showPage(page) {
   // Load page data
   switch (page) {
     case 'dashboard': loadDashboard(); break;
+    case 'opening': loadOpening(); break;
     case 'couple': loadCouple(); break;
     case 'events': loadEvents(); break;
     case 'stories': loadStories(); break;
@@ -797,16 +800,40 @@ async function resetAllData() {
     showToast('\u2705 Data di-reset ke default!');
   } catch (err) {
     showLoading(false);
-    showToast('\u274C Error: ' + err.message);
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+// ── Opening Text ─────────────────────────────────────────────
+function loadOpening() {
+  var opening = adminData.opening || (typeof DEFAULT_DATA !== 'undefined' && DEFAULT_DATA.opening) || {};
+  if ($('opening-title')) $('opening-title').value = opening.title || 'Kepada Yth. Bapak/Ibu/Saudara/i';
+  if ($('opening-subtitle')) $('opening-subtitle').value = opening.subtitle || 'Mohon maaf apabila ada kesalahan penulisan nama dan gelar';
+  if ($('opening-btn-text')) $('opening-btn-text').value = opening.buttonText || 'Buka Undangan';
+}
+
+async function saveOpening() {
+  var title = $('opening-title') ? $('opening-title').value.trim() : '';
+  var subtitle = $('opening-subtitle') ? $('opening-subtitle').value.trim() : '';
+  var btnText = $('opening-btn-text') ? $('opening-btn-text').value.trim() : '';
+  var opening = {
+    title: title || 'Kepada Yth. Bapak/Ibu/Saudara/i',
+    subtitle: subtitle || 'Mohon maaf apabila ada kesalahan penulisan nama dan gelar',
+    buttonText: btnText || 'Buka Undangan'
+  };
+  try {
+    await setConfig('opening', opening);
+    adminData.opening = opening;
+    showToast('✅ Teks pembuka berhasil disimpan!');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
   }
 }
 
 // ── Init ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async function() {
-  // Load data first
-  await loadAll();
-
-  // Sidebar navigation
+document.addEventListener('DOMContentLoaded', function() {
+  // 1. ATTACH ALL NAVIGATION & CLICK HANDLERS IMMEDIATELY (SYNCHRONOUS)
+  // Ensures buttons, menus, and hamburger work immediately with zero delay
   document.querySelectorAll('.nav-item[data-page]').forEach(function(item) {
     item.addEventListener('click', function(e) {
       e.preventDefault();
@@ -834,6 +861,10 @@ document.addEventListener('DOMContentLoaded', async function() {
       closeSidebar();
     });
   }
+
+  // Opening save
+  var btnSaveOpening = $('btn-save-opening');
+  if (btnSaveOpening) btnSaveOpening.addEventListener('click', saveOpening);
 
   // QRIS events
   var btnQrisUpload = $('btn-qris-upload');
@@ -928,6 +959,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   var btnReset = $('btn-reset');
   if (btnReset) btnReset.addEventListener('click', resetAllData);
 
-  // Show dashboard by default
+  // 2. Render initial view immediately
   showPage('dashboard');
+
+  // 3. Fetch latest data from database asynchronously in background
+  loadAll().then(function() {
+    var activeItem = document.querySelector('.nav-item.active');
+    var activePage = activeItem ? activeItem.getAttribute('data-page') : 'dashboard';
+    showPage(activePage);
+  }).catch(function(err) {
+    console.warn('loadAll background error:', err);
+  });
 });
+
+

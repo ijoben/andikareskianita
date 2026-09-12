@@ -37,6 +37,11 @@ var DEFAULT_DATA = {
     image: '',
     name: 'a.n. Ahmad Rizki Pratama',
     note: 'Terima kasih atas kado & ucapan Anda'
+  },
+  opening: {
+    title: 'Kepada Yth. Bapak/Ibu/Saudara/i',
+    subtitle: 'Mohon maaf apabila ada kesalahan penulisan nama dan gelar',
+    buttonText: 'Buka Undangan'
   }
 };
 
@@ -55,20 +60,27 @@ async function setConfig(key, value) {
   } catch (e) { console.error('setConfig error:', key, e); throw e; }
 }
 
-// Load all config data
+// Load all config data (fast parallel loading via Promise.all)
 async function loadAllConfig() {
   var result = {};
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris'];
-  for (var i = 0; i < keys.length; i++) {
-    var val = await getConfig(keys[i]);
-    result[keys[i]] = val || JSON.parse(JSON.stringify(DEFAULT_DATA[keys[i]]));
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening'];
+  try {
+    var values = await Promise.all(keys.map(function(k) { return getConfig(k); }));
+    for (var i = 0; i < keys.length; i++) {
+      result[keys[i]] = values[i] || JSON.parse(JSON.stringify(DEFAULT_DATA[keys[i]] || {}));
+    }
+  } catch (e) {
+    console.error('loadAllConfig error:', e);
+    keys.forEach(function(k) {
+      result[k] = JSON.parse(JSON.stringify(DEFAULT_DATA[k] || {}));
+    });
   }
   return result;
 }
 
 // Save all config data
 async function saveAllConfig(data) {
-  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris'];
+  var keys = ['couple', 'events', 'stories', 'gallery', 'music', 'theme', 'qris', 'opening'];
   for (var i = 0; i < keys.length; i++) {
     if (data[keys[i]] !== undefined) {
       await setConfig(keys[i], data[keys[i]]);

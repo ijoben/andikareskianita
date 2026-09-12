@@ -128,6 +128,32 @@ function renderOverlay(data) {
     var activeEvent = events.find(function(e) { return e.enabled !== false; }) || events[0];
     if (activeEvent && activeEvent.date) olDate.textContent = formatDateShort(activeEvent.date);
   }
+
+  // Opening text from config and query parameter (?to=GuestName)
+  var op = data.opening || (typeof DEFAULT_DATA !== 'undefined' && DEFAULT_DATA.opening) || {};
+  var urlParams = new URLSearchParams(window.location.search);
+  var guestName = urlParams.get('to') || urlParams.get('u') || urlParams.get('guest');
+
+  var openToEl = document.querySelector('.open-to');
+  if (openToEl) {
+    var baseTitle = op.title || 'Kepada Yth. Bapak/Ibu/Saudara/i';
+    if (guestName) {
+      openToEl.innerHTML = escapeHtml(baseTitle) + '<br><span style="display:inline-block;margin-top:8px;font-size:1.15em;font-weight:700;color:var(--gold);text-shadow:0 2px 4px rgba(0,0,0,0.4);">' + escapeHtml(guestName) + '</span>';
+    } else {
+      openToEl.textContent = baseTitle;
+    }
+  }
+
+  var openSubEl = document.querySelector('.open-subtitle');
+  if (openSubEl) {
+    openSubEl.textContent = op.subtitle || 'Mohon maaf apabila ada kesalahan penulisan nama dan gelar';
+  }
+
+  var openBtnEl = $('open-btn');
+  if (openBtnEl) {
+    openBtnEl.innerHTML = '<i class="fas fa-envelope-open"></i> ' + escapeHtml(op.buttonText || 'Buka Undangan');
+  }
+
   createPetals();
 }
 
@@ -397,64 +423,89 @@ function initMusic() {
 function initScrollBtn() {
   var btn = $('scroll-down-btn');
   if (!btn) return;
-  window.addEventListener('scroll', function() {
-    if (window.scrollY > 300) { btn.classList.remove('hidden'); }
-    else { btn.classList.add('hidden'); }
-    btn.innerHTML = (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100)
-      ? '<i class="fas fa-chevron-up"></i>' : '<i class="fas fa-chevron-down"></i>';
-    btn.onclick = function() {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: document.body.offsetHeight, behavior: 'smooth' });
-      }
-    };
-  });
+  btn.onclick = function() {
+    var scrollY = window.scrollY || window.pageYOffset;
+    var atBottom = (window.innerHeight + scrollY >= document.body.offsetHeight - 120);
+    if (atBottom) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: document.body.offsetHeight, behavior: 'smooth' });
+    }
+  };
 }
 
-// ── Bottom nav ───────────────────────────────────────────────
+// ── Bottom nav & High-Performance Throttled Scroll Listener ──
 function initBottomNav() {
   var navItems = document.querySelectorAll('.bottom-nav-item');
-  navItems.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var target = btn.getAttribute('data-target') || btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-      if (target) {
-        var el = document.getElementById(target);
+  var btn = $('scroll-down-btn');
+  var sections = ['hero', 'couple', 'story', 'events', 'gallery', 'rsvp'];
+
+  navItems.forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var onclickAttr = item.getAttribute('onclick') || '';
+      var m = onclickAttr.match(/'([^']+)'/);
+      var targetId = m ? m[1] : '';
+      if (targetId) {
+        var el = $(targetId);
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       }
     });
   });
-  // Active state on scroll
-  var sections = ['hero', 'couple', 'story', 'events', 'gallery', 'rsvp'];
+
+  // Single passive throttled scroll listener for 60fps/120fps mobile performance
+  var ticking = false;
   window.addEventListener('scroll', function() {
-    var current = 'hero';
-    sections.forEach(function(id) {
-      var el = $(id);
-      if (el && el.getBoundingClientRect().top <= 200) current = id;
-    });
-    navItems.forEach(function(btn) {
-      var target = btn.getAttribute('data-target') || '';
-      btn.classList.toggle('active', target === current);
-    });
-  });
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        var scrollY = window.scrollY || window.pageYOffset;
+        // 1. Scroll-down button update
+        if (btn) {
+          if (scrollY > 300) {
+            btn.classList.remove('hidden');
+            var atBottom = (window.innerHeight + scrollY >= document.body.offsetHeight - 120);
+            btn.innerHTML = atBottom ? '<i class="fas fa-chevron-up"></i>' : '<i class="fas fa-chevron-down"></i>';
+          } else {
+            btn.classList.add('hidden');
+          }
+        }
+        // 2. Active state update
+        var current = 'hero';
+        for (var i = 0; i < sections.length; i++) {
+          var el = $(sections[i]);
+          if (el && el.getBoundingClientRect().top <= 250) {
+            current = sections[i];
+          }
+        }
+        navItems.forEach(function(item) {
+          var onclickAttr = item.getAttribute('onclick') || '';
+          var matches = onclickAttr.indexOf("'" + current + "'") !== -1 || onclickAttr.indexOf('"' + current + '"') !== -1;
+          item.classList.toggle('active', matches);
+        });
+
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
 }
 
-// ── Flower petals (Gentle & Slow Sakura) ─────────────────────
+// ── Flower petals (Gentle & Ultra-Smooth Sakura) ─────────────
 function createPetals() {
   var container = $('flower-petals');
   if (!container) return;
   container.innerHTML = '';
-  // Subtle count: 8 on mobile, 15 on desktop for calm, luxurious ambiance
-  var count = window.innerWidth < 768 ? 8 : 15;
+  // Subtle count: 5 on mobile, 10 on desktop for silky smooth 60fps scrolling
+  var count = window.innerWidth < 768 ? 5 : 10;
   for (var i = 0; i < count; i++) {
     var petal = document.createElement('div');
     petal.className = 'petal';
-    var sizeW = Math.random() * 8 + 12; // 12px to 20px
-    var sizeH = sizeW * (Math.random() * 0.4 + 1.2); // natural petal elongation
-    var left = Math.random() * 96 + 2;
-    var delay = Math.random() * 12;
-    var duration = Math.random() * 8 + 12; // slow 12-20 seconds falling
-    var drift = (Math.random() - 0.5) * 80;
+    var sizeW = Math.random() * 5 + 11; // 11px to 16px
+    var sizeH = sizeW * (Math.random() * 0.3 + 1.2);
+    var left = Math.random() * 94 + 3;
+    var delay = Math.random() * 8;
+    var duration = Math.random() * 6 + 14; // slow 14-20 seconds falling
+    var drift = (Math.random() - 0.5) * 60;
     petal.style.cssText = 'left:' + left + 'vw;width:' + sizeW + 'px;height:' + sizeH + 'px;' +
       'animation-delay:' + delay + 's;animation-duration:' + duration + 's;--drift:' + drift + 'px;';
     container.appendChild(petal);

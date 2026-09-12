@@ -21,6 +21,7 @@
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="#" class="nav-item" data-page="opening"><i class="fas fa-envelope-open-text"></i> Teks Opening</a>
         <a href="#" class="nav-item" data-page="couple"><i class="fas fa-heart"></i> Mempelai</a>
         <a href="#" class="nav-item" data-page="events"><i class="fas fa-calendar-alt"></i> Acara</a>
         <a href="#" class="nav-item" data-page="gallery"><i class="fas fa-images"></i> Galeri</a>
@@ -51,6 +52,28 @@
           <div class="stat-card"><div class="stat-icon red"><i class="fas fa-user-times"></i></div><div class="stat-info"><span class="stat-number" id="stat-tidak">0</span><span class="stat-label">Tidak Hadir</span></div></div>
           <div class="stat-card"><div class="stat-icon yellow"><i class="fas fa-user-clock"></i></div><div class="stat-info"><span class="stat-number" id="stat-ragu">0</span><span class="stat-label">Ragu</span></div></div>
           <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-comment"></i></div><div class="stat-info"><span class="stat-number" id="stat-wishes">0</span><span class="stat-label">Ucapan</span></div></div>
+        </div>
+      </section>
+
+      <section id="page-opening" class="page">
+        <h2>Edit Teks Pembuka (Opening Screen)</h2>
+        <div class="form-card">
+          <h3><i class="fas fa-envelope-open-text"></i> Tulisan di Amplop / Layar Pembuka</h3>
+          <p class="help-text">Sesuaikan teks yang pertama kali dilihat oleh tamu saat menerima undangan digital.</p>
+          <div class="form-group">
+            <label>Judul / Sapaan Tamu</label>
+            <input type="text" id="opening-title" placeholder="Kepada Yth. Bapak/Ibu/Saudara/i">
+            <small style="color:#888;">Contoh: "Kepada Yth. Bapak/Ibu/Saudara/i" atau "Undangan Spesial Untuk". Jika link undangan memiliki parameter nama tamu (misal: ?to=Budi), nama akan otomatis disisipkan di bawah teks ini.</small>
+          </div>
+          <div class="form-group">
+            <label>Pesan / Keterangan (Subtitle)</label>
+            <textarea id="opening-subtitle" rows="3" placeholder="Mohon maaf apabila ada kesalahan penulisan nama dan gelar"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Teks Tombol Buka Undangan</label>
+            <input type="text" id="opening-btn-text" placeholder="Buka Undangan">
+          </div>
+          <button class="btn-save" id="btn-save-opening"><i class="fas fa-save"></i> Simpan Teks Opening</button>
         </div>
       </section>
 
