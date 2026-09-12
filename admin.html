@@ -6,24 +6,11 @@
   <title>Admin - Wedding Invitation</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/admin/css/admin.css">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-  <div id="login-page" class="login-page">
-    <div class="login-card">
-      <div class="login-icon"><i class="fas fa-heart"></i></div>
-      <h1>Admin Panel</h1>
-      <p>Undangan Pernikahan</p>
-      <form id="login-form">
-        <div class="form-group"><label><i class="fas fa-user"></i> Username</label><input type="text" id="login-username" placeholder="Masukkan username" required></div>
-        <div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="login-password" placeholder="Masukkan password" required></div>
-        <button type="submit" class="btn-login">Masuk</button>
-        <p id="login-error" class="login-error hidden"></p>
-      </form>
-    </div>
-  </div>
-
-  <div id="admin-app" class="admin-app hidden">
+  <!-- No login needed - localStorage is per-browser -->
+  <div class="admin-app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header"><i class="fas fa-heart"></i> <span>Wedding Admin</span></div>
       <nav class="sidebar-nav">
@@ -39,14 +26,13 @@
         <a href="#" class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Pengaturan</a>
       </nav>
       <div class="sidebar-footer">
-        <a href="/" target="_blank" class="nav-item"><i class="fas fa-external-link-alt"></i> Lihat Undangan</a>
-        <a href="#" class="nav-item" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+        <a href="index.html" class="nav-item"><i class="fas fa-external-link-alt"></i> Lihat Undangan</a>
       </div>
     </aside>
 
-    <div class="mobile-header"><button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button><span>Wedding Admin</span><a href="/" target="_blank"><i class="fas fa-external-link-alt"></i></a></div>
+    <div class="mobile-header"><button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button><span>Wedding Admin</span><a href="index.html"><i class="fas fa-external-link-alt"></i></a></div>
 
-    <main class="main-content" id="main-area">
+    <main class="main-content">
       <section id="page-dashboard" class="page active">
         <h2>Dashboard</h2>
         <div class="stats-grid">
@@ -84,22 +70,23 @@
           <div class="form-group"><label>Quote</label><textarea id="couple-quote" rows="3"></textarea></div>
           <div class="form-group"><label>Sumber</label><input type="text" id="couple-quote-source"></div>
         </div>
-        <button class="btn-save" onclick="saveCouple()"><i class="fas fa-save"></i> Simpan</button>
+        <button class="btn-save" id="btn-save-couple"><i class="fas fa-save"></i> Simpan</button>
       </section>
 
       <section id="page-events" class="page">
         <h2>Edit Acara</h2>
         <div id="events-forms"></div>
-        <button class="btn-save" onclick="saveEvents()"><i class="fas fa-save"></i> Simpan Semua</button>
+        <button class="btn-save" id="btn-save-events"><i class="fas fa-save"></i> Simpan Semua</button>
       </section>
 
       <section id="page-gallery" class="page">
         <h2>Galeri Foto</h2>
         <div class="form-card">
           <h3><i class="fas fa-upload"></i> Upload Foto Baru</h3>
+          <p class="help-text">Foto disimpan sebagai base64 di browser. Gunakan gambar yang tidak terlalu besar.</p>
           <div class="form-group"><label>Caption</label><input type="text" id="gallery-caption" placeholder="Deskripsi foto"></div>
           <div class="form-group"><label>Pilih Foto</label><input type="file" id="gallery-file" accept="image/*"></div>
-          <button class="btn-save" onclick="uploadGallery()"><i class="fas fa-upload"></i> Upload</button>
+          <button class="btn-save" id="btn-upload-gallery"><i class="fas fa-upload"></i> Upload</button>
         </div>
         <div class="gallery-list" id="gallery-list"></div>
       </section>
@@ -114,7 +101,7 @@
           </div>
           <div class="form-group"><label>Deskripsi</label><textarea id="story-desc" rows="3" placeholder="Cerita perjalanan cinta..."></textarea></div>
           <div class="form-group"><label>Foto</label><input type="file" id="story-file" accept="image/*"></div>
-          <button class="btn-save" onclick="addStory()"><i class="fas fa-plus"></i> Tambah</button>
+          <button class="btn-save" id="btn-add-story"><i class="fas fa-plus"></i> Tambah</button>
         </div>
         <div class="stories-list" id="stories-list"></div>
       </section>
@@ -123,10 +110,11 @@
         <h2>Musik Latar</h2>
         <div class="form-card">
           <h3><i class="fas fa-upload"></i> Upload Musik</h3>
-          <p class="help-text">Format: MP3, WAV, OGG (Max 5MB)</p>
+          <p class="help-text">Format: MP3, WAV (Max 5MB). Disimpan sebagai base64 di browser.</p>
           <div class="form-group"><label>File Musik</label><input type="file" id="music-file" accept="audio/*"></div>
           <div class="current-file" id="music-current"></div>
-          <button class="btn-save" onclick="uploadMusic()"><i class="fas fa-upload"></i> Upload Musik</button>
+          <button class="btn-save" id="btn-upload-music"><i class="fas fa-upload"></i> Upload Musik</button>
+          <button class="btn-outline" id="btn-remove-music"><i class="fas fa-trash"></i> Hapus Musik</button>
         </div>
       </section>
 
@@ -135,33 +123,30 @@
         <div class="form-card">
           <h3><i class="fas fa-palette"></i> Pilih Preset Tema</h3>
           <div class="theme-presets" id="theme-presets">
-            <button class="theme-preset" data-preset="pink" onclick="applyPreset('pink')"><span class="preset-color" style="background:linear-gradient(135deg,#d4648a,#b84670)"></span><span>Pink Rose</span></button>
-            <button class="theme-preset active" data-preset="gold" onclick="applyPreset('gold')"><span class="preset-color" style="background:linear-gradient(135deg,#d4af37,#b8960c)"></span><span>Gold Classic</span></button>
-            <button class="theme-preset" data-preset="royal" onclick="applyPreset('royal')"><span class="preset-color" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a)"></span><span>Royal Blue</span></button>
-            <button class="theme-preset" data-preset="sage" onclick="applyPreset('sage')"><span class="preset-color" style="background:linear-gradient(135deg,#7d9b76,#5a7d52)"></span><span>Sage Green</span></button>
-            <button class="theme-preset" data-preset="lavender" onclick="applyPreset('lavender')"><span class="preset-color" style="background:linear-gradient(135deg,#9b7fb8,#7a5c99)"></span><span>Lavender</span></button>
-            <button class="theme-preset" data-preset="sunset" onclick="applyPreset('sunset')"><span class="preset-color" style="background:linear-gradient(135deg,#e07c4f,#c45a2c)"></span><span>Sunset</span></button>
+            <button class="theme-preset" data-preset="pink"><span class="preset-color" style="background:linear-gradient(135deg,#d4648a,#b84670)"></span><span>Pink Rose</span></button>
+            <button class="theme-preset" data-preset="gold"><span class="preset-color" style="background:linear-gradient(135deg,#d4af37,#b8960c)"></span><span>Gold Classic</span></button>
+            <button class="theme-preset" data-preset="royal"><span class="preset-color" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a)"></span><span>Royal Blue</span></button>
+            <button class="theme-preset" data-preset="sage"><span class="preset-color" style="background:linear-gradient(135deg,#7d9b76,#5a7d52)"></span><span>Sage Green</span></button>
+            <button class="theme-preset" data-preset="lavender"><span class="preset-color" style="background:linear-gradient(135deg,#9b7fb8,#7a5c99)"></span><span>Lavender</span></button>
+            <button class="theme-preset" data-preset="sunset"><span class="preset-color" style="background:linear-gradient(135deg,#e07c4f,#c45a2c)"></span><span>Sunset</span></button>
           </div>
         </div>
-
         <div class="form-card">
           <h3><i class="fas fa-image"></i> Background Utama</h3>
-          <div class="form-group"><label>Hero Background</label><div class="bg-preview" id="hero-bg-preview"></div><input type="file" id="theme-hero-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" onclick="uploadThemeBg('heroBg','theme-hero-bg','hero-bg-preview')"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" onclick="removeThemeBg('heroBg','hero-bg-preview')"><i class="fas fa-trash"></i> Hapus</button></div></div>
-          <div class="form-group"><label>Overlay Background (Opening)</label><div class="bg-preview" id="open-bg-preview"></div><input type="file" id="theme-open-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" onclick="uploadThemeBg('openBg','theme-open-bg','open-bg-preview')"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" onclick="removeThemeBg('openBg','open-bg-preview')"><i class="fas fa-trash"></i> Hapus</button></div></div>
+          <div class="form-group"><label>Hero Background</label><div class="bg-preview" id="hero-bg-preview"></div><input type="file" id="theme-hero-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" id="btn-hero-bg"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" id="btn-hero-bg-rm"><i class="fas fa-trash"></i> Hapus</button></div></div>
+          <div class="form-group"><label>Overlay Background (Opening)</label><div class="bg-preview" id="open-bg-preview"></div><input type="file" id="theme-open-bg" accept="image/*"><div class="bg-actions"><button class="btn-save" id="btn-open-bg"><i class="fas fa-upload"></i> Upload</button><button class="btn-outline" id="btn-open-bg-rm"><i class="fas fa-trash"></i> Hapus</button></div></div>
         </div>
-
         <div class="form-card">
           <h3><i class="fas fa-images"></i> Background Per Section</h3>
-          <p class="help-text">Upload gambar background untuk tiap section. Gambar akan tampil dengan overlay gelap agar teks tetap terbaca.</p>
+          <p class="help-text">Upload gambar background untuk tiap section. Akan diberi overlay gelap otomatis.</p>
           <div class="section-bgs-grid">
-            <div class="form-group"><label>Section Mempelai</label><div class="bg-preview sm" id="couple-bg-preview"></div><input type="file" id="theme-couple-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" onclick="uploadThemeBg('coupleBg','theme-couple-bg','couple-bg-preview')"><i class="fas fa-upload"></i></button><button class="btn-outline sm" onclick="removeThemeBg('coupleBg','couple-bg-preview')"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Love Story</label><div class="bg-preview sm" id="story-bg-preview"></div><input type="file" id="theme-story-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" onclick="uploadThemeBg('storyBg','theme-story-bg','story-bg-preview')"><i class="fas fa-upload"></i></button><button class="btn-outline sm" onclick="removeThemeBg('storyBg','story-bg-preview')"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Acara</label><div class="bg-preview sm" id="events-bg-preview"></div><input type="file" id="theme-events-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" onclick="uploadThemeBg('eventsBg','theme-events-bg','events-bg-preview')"><i class="fas fa-upload"></i></button><button class="btn-outline sm" onclick="removeThemeBg('eventsBg','events-bg-preview')"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section Galeri</label><div class="bg-preview sm" id="gallery-bg-preview"></div><input type="file" id="theme-gallery-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" onclick="uploadThemeBg('galleryBg','theme-gallery-bg','gallery-bg-preview')"><i class="fas fa-upload"></i></button><button class="btn-outline sm" onclick="removeThemeBg('galleryBg','gallery-bg-preview')"><i class="fas fa-trash"></i></button></div></div>
-            <div class="form-group"><label>Section RSVP</label><div class="bg-preview sm" id="rsvp-bg-preview"></div><input type="file" id="theme-rsvp-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" onclick="uploadThemeBg('rsvpBg','theme-rsvp-bg','rsvp-bg-preview')"><i class="fas fa-upload"></i></button><button class="btn-outline sm" onclick="removeThemeBg('rsvpBg','rsvp-bg-preview')"><i class="fas fa-trash"></i></button></div></div>
+            <div class="form-group"><label>Section Mempelai</label><div class="bg-preview sm" id="couple-bg-preview"></div><input type="file" id="theme-couple-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-couple-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-couple-bg-rm"><i class="fas fa-trash"></i></button></div></div>
+            <div class="form-group"><label>Section Love Story</label><div class="bg-preview sm" id="story-bg-preview"></div><input type="file" id="theme-story-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-story-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-story-bg-rm"><i class="fas fa-trash"></i></button></div></div>
+            <div class="form-group"><label>Section Acara</label><div class="bg-preview sm" id="events-bg-preview"></div><input type="file" id="theme-events-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-events-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-events-bg-rm"><i class="fas fa-trash"></i></button></div></div>
+            <div class="form-group"><label>Section Galeri</label><div class="bg-preview sm" id="gallery-bg-preview"></div><input type="file" id="theme-gallery-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-gallery-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-gallery-bg-rm"><i class="fas fa-trash"></i></button></div></div>
+            <div class="form-group"><label>Section RSVP</label><div class="bg-preview sm" id="rsvp-bg-preview"></div><input type="file" id="theme-rsvp-bg" accept="image/*"><div class="bg-actions"><button class="btn-save sm" id="btn-rsvp-bg"><i class="fas fa-upload"></i></button><button class="btn-outline sm" id="btn-rsvp-bg-rm"><i class="fas fa-trash"></i></button></div></div>
           </div>
         </div>
-
         <div class="form-card">
           <h3><i class="fas fa-adjust"></i> Warna Custom</h3>
           <div class="form-grid">
@@ -172,7 +157,7 @@
             <div class="form-group"><label>Background Body</label><input type="color" id="theme-body-bg" value="#fff5f7"></div>
             <div class="form-group"><label>Teks Body</label><input type="color" id="theme-body-text" value="#333333"></div>
           </div>
-          <button class="btn-save" onclick="saveThemeColors()"><i class="fas fa-save"></i> Simpan Warna</button>
+          <button class="btn-save" id="btn-save-colors"><i class="fas fa-save"></i> Simpan Warna</button>
         </div>
       </section>
 
@@ -192,18 +177,27 @@
       </section>
 
       <section id="page-settings" class="page">
-        <h2>Pengaturan</h2>
+        <h2>Pengaturan Data</h2>
         <div class="form-card">
-          <h3><i class="fas fa-key"></i> Ganti Password</h3>
-          <div class="form-group"><label>Password Lama</label><input type="password" id="old-password"></div>
-          <div class="form-group"><label>Password Baru</label><input type="password" id="new-password"></div>
-          <button class="btn-save" onclick="changePassword()"><i class="fas fa-save"></i> Ganti Password</button>
+          <h3><i class="fas fa-download"></i> Export / Import Data</h3>
+          <p class="help-text">Export data untuk backup, atau import data dari perangkat lain.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-save" id="btn-export"><i class="fas fa-download"></i> Export Data (JSON)</button>
+            <button class="btn-outline" id="btn-import-label"><i class="fas fa-upload"></i> Import Data</button>
+            <input type="file" id="btn-import" accept=".json" style="display:none">
+          </div>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-trash"></i> Reset Data</h3>
+          <p class="help-text">Hapus semua data dan kembali ke default. Tidak dapat dibatalkan!</p>
+          <button class="btn-outline" id="btn-reset" style="border-color:#e74c3c;color:#e74c3c"><i class="fas fa-trash"></i> Reset Semua Data</button>
         </div>
       </section>
     </main>
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="/admin/js/admin.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

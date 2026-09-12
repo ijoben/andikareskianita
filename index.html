@@ -7,13 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Flower Petals -->
   <div class="flower-petals" id="flower-petals"></div>
 
-  <!-- Open Overlay -->
   <div id="open-overlay" class="open-overlay">
     <div class="particles" id="open-particles"></div>
     <div class="open-envelope">
@@ -24,12 +22,10 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div id="main-content" class="main-content hidden">
     <button id="music-toggle" class="music-toggle" title="Toggle Music"><i class="fas fa-music"></i></button>
-    <button id="scroll-down-btn" class="scroll-down-btn hidden" title="Scroll ke bawah"><i class="fas fa-chevron-down"></i></button>
+    <button id="scroll-down-btn" class="scroll-down-btn hidden" title="Scroll"><i class="fas fa-chevron-down"></i></button>
 
-    <!-- Hero -->
     <section id="hero" class="section hero-section">
       <div class="hero-bg"></div>
       <div class="particles" id="hero-particles"></div>
@@ -41,15 +37,10 @@
           <span class="hero-ampersand">&amp;</span>
           <span class="bride-name" id="hero-bride">Fatimah</span>
         </h1>
-        <div class="hero-date reveal">
-          <div class="date-divider"></div>
-          <p id="hero-date-text">15 &#8226; 10 &#8226; 2026</p>
-          <div class="date-divider"></div>
-        </div>
+        <div class="hero-date reveal"><div class="date-divider"></div><p id="hero-date-text">15 &#8226; 10 &#8226; 2026</p><div class="date-divider"></div></div>
       </div>
     </section>
 
-    <!-- Countdown -->
     <section id="countdown" class="section countdown-section">
       <div class="container">
         <h2 class="section-title reveal">Menuju Hari Bahagia</h2>
@@ -65,20 +56,19 @@
       </div>
     </section>
 
-    <!-- Couple -->
     <section id="couple" class="section couple-section">
       <div class="section-ornament">&hearts;</div>
       <div class="container">
         <h2 class="section-title reveal">Mempelai</h2>
         <div class="couple-grid">
           <div class="couple-card reveal">
-            <div class="couple-photo"><img id="groom-photo" src="/assets/images/groom.jpg" alt="Mempelai Pria"></div>
+            <div class="couple-photo"><img id="groom-photo" src="assets/images/groom.jpg" alt="Mempelai Pria"></div>
             <h3 class="couple-name" id="groom-name">Ahmad Rizki Pratama, S.Kom</h3>
             <p class="couple-parents" id="groom-parents">Putra dari<br>Bapak H. Muhammad Pratama<br>&amp;<br>Ibu Hj. Siti Aminah</p>
           </div>
           <div class="couple-heart reveal"><i class="fas fa-heart"></i></div>
           <div class="couple-card reveal">
-            <div class="couple-photo"><img id="bride-photo" src="/assets/images/bride.jpg" alt="Mempelai Wanita"></div>
+            <div class="couple-photo"><img id="bride-photo" src="assets/images/bride.jpg" alt="Mempelai Wanita"></div>
             <h3 class="couple-name" id="bride-name">Fatimah Azzahra, S.Pd</h3>
             <p class="couple-parents" id="bride-parents">Putri dari<br>Bapak H. Abdullah Azzahra<br>&amp;<br>Ibu Hj. Nur Halimah</p>
           </div>
@@ -90,25 +80,21 @@
       </div>
     </section>
 
-    <!-- Love Story -->
     <section id="story" class="section story-section">
       <div class="section-ornament">&#10047;</div>
       <div class="container"><h2 class="section-title reveal">Love Story</h2><div class="timeline" id="story-timeline"></div></div>
     </section>
 
-    <!-- Events -->
     <section id="events" class="section events-section">
       <div class="section-ornament">&#128141;</div>
       <div class="container"><h2 class="section-title reveal">Waktu &amp; Tempat</h2><div class="events-grid" id="events-grid"></div></div>
     </section>
 
-    <!-- Gallery -->
     <section id="gallery" class="section gallery-section">
       <div class="section-ornament">&#128247;</div>
       <div class="container"><h2 class="section-title reveal">Galeri</h2><div class="gallery-grid" id="gallery-grid"></div></div>
     </section>
 
-    <!-- RSVP -->
     <section id="rsvp" class="section rsvp-section">
       <div class="section-ornament">&#9993;</div>
       <div class="container">
@@ -133,12 +119,10 @@
       </div>
     </section>
 
-    <!-- Wishes -->
     <section id="wishes" class="section wishes-section">
       <div class="container"><h2 class="section-title reveal">Ucapan &amp; Doa</h2><div class="wishes-grid" id="wishes-grid"></div></div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <div class="footer-couple"><span id="footer-groom">Ahmad</span> <i class="fas fa-heart"></i> <span id="footer-bride">Fatimah</span></div>
@@ -149,7 +133,6 @@
     </footer>
   </div>
 
-  <!-- Bottom Navigation (Mobile) -->
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bottom-nav-inner">
       <button class="bottom-nav-item active" onclick="scrollToSection('hero')"><i class="fas fa-home"></i><span>Home</span></button>
@@ -160,7 +143,6 @@
     </div>
   </nav>
 
-  <!-- Lightbox -->
   <div id="lightbox" class="lightbox hidden">
     <button class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></button>
     <button class="lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
@@ -169,6 +151,7 @@
     <p id="lightbox-caption" class="lightbox-caption"></p>
   </div>
 
-  <script src="/js/main.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
