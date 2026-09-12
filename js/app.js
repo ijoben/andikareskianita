@@ -518,58 +518,79 @@ async function submitRsvp(e) {
     console.warn('Refresh wishes error:', err);
   }
 
-  // 4. Siapkan format pesan WhatsApp mempelai
+  // 4. Periksa apakah redirect ke WhatsApp aktif
   var couple = (weddingData && weddingData.couple) || {};
-  var groomName = (couple.groom && couple.groom.name) ? couple.groom.name : 'Andika';
-  var brideName = (couple.bride && couple.bride.name) ? couple.bride.name : 'Rezki';
-  var attLabel = attendance.value === 'hadir' ? 'Hadir' : (attendance.value === 'tidak_hadir' ? 'Tidak Hadir' : 'Masih Ragu');
-  var guestLabel = attendance.value === 'hadir' ? ' (' + guests + ' Orang)' : '';
+  var isWaEnabled = couple.whatsappEnabled !== false;
 
-  var waMessage = 'Halo ' + groomName + ' & ' + brideName + ',\n\n' +
-    'Saya ingin mengonfirmasi kehadiran untuk acara pernikahan Anda:\n' +
-    '• *Nama:* ' + name + '\n' +
-    '• *Status Kehadiran:* ' + attLabel + guestLabel + '\n' +
-    (message ? '• *Ucapan & Doa:* ' + message + '\n' : '') +
-    '\nTerima kasih!';
-
-  var rawPhone = couple.whatsapp || (weddingData && weddingData.whatsapp) || '';
-  var cleanPhone = rawPhone.replace(/[^0-9]/g, '');
-  if (cleanPhone.startsWith('0')) {
-    cleanPhone = '62' + cleanPhone.slice(1);
-  }
-
-  var waUrl = cleanPhone
-    ? 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(waMessage)
-    : 'https://api.whatsapp.com/send?text=' + encodeURIComponent(waMessage);
-
-  // 5. Tampilkan status sukses di halaman & pasang URL WhatsApp
   var formEl = $('rsvp-form');
   var successEl = $('rsvp-success');
-  if (formEl) formEl.style.display = 'none';
-  if (successEl) {
-    successEl.classList.remove('hidden');
-    successEl.style.display = 'block';
-    var waBtn = $('btn-open-wa');
-    if (waBtn) {
-      waBtn.href = waUrl;
-      waBtn.style.display = 'inline-flex';
+  var waBtn = $('btn-open-wa');
+
+  if (isWaEnabled) {
+    var groomName = (couple.groom && couple.groom.name) ? couple.groom.name : 'Andika';
+    var brideName = (couple.bride && couple.bride.name) ? couple.bride.name : 'Rezki';
+    var attLabel = attendance.value === 'hadir' ? 'Hadir' : (attendance.value === 'tidak_hadir' ? 'Tidak Hadir' : 'Masih Ragu');
+    var guestLabel = attendance.value === 'hadir' ? ' (' + guests + ' Orang)' : '';
+
+    var waMessage = 'Halo ' + groomName + ' & ' + brideName + ',\n\n' +
+      'Saya ingin mengonfirmasi kehadiran untuk acara pernikahan Anda:\n' +
+      '• *Nama:* ' + name + '\n' +
+      '• *Status Kehadiran:* ' + attLabel + guestLabel + '\n' +
+      (message ? '• *Ucapan & Doa:* ' + message + '\n' : '') +
+      '\nTerima kasih!';
+
+    var rawPhone = couple.whatsapp || (weddingData && weddingData.whatsapp) || '';
+    var cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62' + cleanPhone.slice(1);
+    }
+
+    var waUrl = cleanPhone
+      ? 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(waMessage)
+      : 'https://api.whatsapp.com/send?text=' + encodeURIComponent(waMessage);
+
+    if (formEl) formEl.style.display = 'none';
+    if (successEl) {
+      successEl.classList.remove('hidden');
+      successEl.style.display = 'block';
+      if (waBtn) {
+        waBtn.href = waUrl;
+        waBtn.style.display = 'inline-flex';
+      }
+    }
+
+    showToast('Terima kasih! Konfirmasi tersimpan, mengarahkan ke WhatsApp...');
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
+
+    // Otomatis alihkan ke WhatsApp
+    setTimeout(function() {
+      var win = window.open(waUrl, '_blank');
+      if (!win) {
+        window.location.href = waUrl;
+      }
+    }, 600);
+  } else {
+    // Mode WhatsApp Nonaktif: Tampilkan status sukses di website tanpa buka WhatsApp
+    if (formEl) formEl.style.display = 'none';
+    if (successEl) {
+      successEl.classList.remove('hidden');
+      successEl.style.display = 'block';
+      if (waBtn) {
+        waBtn.style.display = 'none'; // Sembunyikan tombol WhatsApp
+      }
+    }
+
+    showToast('Terima kasih! Konfirmasi dan ucapan Anda berhasil dikirim.');
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
     }
   }
-
-  showToast('Terima kasih! Konfirmasi tersimpan, mengarahkan ke WhatsApp...');
-
-  if (submitBtn) {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnText;
-  }
-
-  // 6. Otomatis alihkan ke WhatsApp
-  setTimeout(function() {
-    var win = window.open(waUrl, '_blank');
-    if (!win) {
-      window.location.href = waUrl;
-    }
-  }, 600);
 }
 
 function resetRsvpForm() {

@@ -118,10 +118,24 @@
           </div>
           <div class="form-group"><label>Foto Profil</label><input type="file" id="bride-photo-file" accept="image/*"><div class="current-file" id="bride-photo-current"></div></div>
         </div>
-        <div class="form-card">
-          <h3><i class="fab fa-whatsapp" style="color:#25d366;"></i> Nomor WhatsApp Mempelai (Tujuan RSVP)</h3>
-          <p class="help-text">Nomor WhatsApp yang akan menerima konfirmasi kehadiran dan ucapan dari formulir RSVP tamu.</p>
-          <div class="form-group">
+        <div class="form-card" id="card-couple-whatsapp" style="border-left: 4px solid #25d366;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+            <div>
+              <h3 style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                <i class="fab fa-whatsapp" id="whatsapp-toggle-icon" style="color: #25d366; font-size: 18px;"></i>
+                Nomor WhatsApp Mempelai (Tujuan RSVP)
+              </h3>
+              <p class="help-text" style="margin-bottom: 0;">Jika aktif (ON), RSVP otomatis dialihkan ke WhatsApp. Jika nonaktif (OFF), konfirmasi &amp; ucapan langsung tampil di website tanpa membuka WhatsApp.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="whatsapp-enabled-toggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span id="whatsapp-status-badge" class="badge" style="background:#e8f5e9; color:#27ae60; font-size:13px; padding: 6px 14px; min-width: 75px; text-align: center;">Aktif</span>
+            </div>
+          </div>
+          <div class="form-group" id="whatsapp-input-group">
             <label>Nomor WhatsApp</label>
             <input type="text" id="couple-whatsapp" placeholder="Contoh: 081234567890 atau 6281234567890">
             <small style="color:#888;">Gunakan format 08... atau 628... Sistem otomatis memformat ke tautan resmi WhatsApp.</small>

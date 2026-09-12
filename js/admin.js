@@ -126,6 +126,22 @@ function loadCouple() {
   if ($('couple-quote')) $('couple-quote').value = couple.quote || '';
   if ($('couple-quote-source')) $('couple-quote-source').value = couple.quoteSource || '';
   if ($('couple-whatsapp')) $('couple-whatsapp').value = couple.whatsapp || '';
+
+  // WhatsApp Toggle state
+  var isWaEnabled = couple.whatsappEnabled !== false;
+  var waToggle = $('whatsapp-enabled-toggle');
+  var waBadge = $('whatsapp-status-badge');
+  var waIcon = $('whatsapp-toggle-icon');
+  var waCard = $('card-couple-whatsapp');
+  if (waToggle) waToggle.checked = isWaEnabled;
+  if (waBadge) {
+    waBadge.textContent = isWaEnabled ? 'Aktif' : 'Nonaktif';
+    waBadge.style.background = isWaEnabled ? '#e8f5e9' : '#ffebee';
+    waBadge.style.color = isWaEnabled ? '#27ae60' : '#e74c3c';
+  }
+  if (waIcon) waIcon.style.color = isWaEnabled ? '#25d366' : '#e74c3c';
+  if (waCard) waCard.style.borderLeftColor = isWaEnabled ? '#25d366' : '#e74c3c';
+
   // Show photo previews
   if (groom.photo) {
     var gc = $('groom-photo-current');
@@ -134,6 +150,31 @@ function loadCouple() {
   if (bride.photo) {
     var bc = $('bride-photo-current');
     if (bc) bc.innerHTML = '<img src="' + bride.photo + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:5px">';
+  }
+}
+
+async function toggleWhatsAppStatus(enabled) {
+  var couple = adminData.couple || {};
+  couple.whatsappEnabled = enabled;
+
+  var badge = $('whatsapp-status-badge');
+  var icon = $('whatsapp-toggle-icon');
+  var card = $('card-couple-whatsapp');
+
+  if (badge) {
+    badge.textContent = enabled ? 'Aktif' : 'Nonaktif';
+    badge.style.background = enabled ? '#e8f5e9' : '#ffebee';
+    badge.style.color = enabled ? '#27ae60' : '#e74c3c';
+  }
+  if (icon) icon.style.color = enabled ? '#25d366' : '#e74c3c';
+  if (card) card.style.borderLeftColor = enabled ? '#25d366' : '#e74c3c';
+
+  try {
+    await setConfig('couple', couple);
+    adminData.couple = couple;
+    showToast(enabled ? '✅ RSVP ke WhatsApp diaktifkan (ON)' : '⚠️ RSVP ke WhatsApp dinonaktifkan (OFF)');
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
   }
 }
 
@@ -155,7 +196,8 @@ async function saveCouple() {
     },
     quote: $('couple-quote').value.trim(),
     quoteSource: $('couple-quote-source').value.trim(),
-    whatsapp: $('couple-whatsapp') ? $('couple-whatsapp').value.trim() : ((adminData.couple || {}).whatsapp || '')
+    whatsapp: $('couple-whatsapp') ? $('couple-whatsapp').value.trim() : ((adminData.couple || {}).whatsapp || ''),
+    whatsappEnabled: $('whatsapp-enabled-toggle') ? $('whatsapp-enabled-toggle').checked : true
   };
   // Handle photo uploads
   var groomFile = $('groom-photo-file');
@@ -1132,6 +1174,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnSaveQris) btnSaveQris.addEventListener('click', saveQris);
 
   // Couple save & instant photo previews
+  var waToggle = $('whatsapp-enabled-toggle');
+  if (waToggle) {
+    waToggle.addEventListener('change', function() {
+      toggleWhatsAppStatus(this.checked);
+    });
+  }
   var btnSaveCouple = $('btn-save-couple');
   if (btnSaveCouple) btnSaveCouple.addEventListener('click', saveCouple);
   var groomFileInput = $('groom-photo-file');

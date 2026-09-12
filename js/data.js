@@ -7,7 +7,8 @@ var DEFAULT_DATA = {
     bride: { name: 'Rezki', fullName: 'REZKIANITA', father: '', mother: '', photo: '' },
     quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri.',
     quoteSource: 'QS. Ar-Rum: 21',
-    whatsapp: ''
+    whatsapp: '',
+    whatsappEnabled: true
   },
   events: [
     { id: 'akad', title: 'Akad Nikah', enabled: true, date: '2026-10-18', time: '08:00', endTime: '10:00', venue: 'Kediaman Mempelai Wanita', address: 'Jl. Sisingamangaraja No. 1, Jakarta Selatan', mapUrl: 'https://maps.google.com/?q=-6.2447,106.7951' },

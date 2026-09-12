@@ -53,7 +53,9 @@ INSERT INTO config (key, value) VALUES
   "groom": {"name":"Ahmad","fullName":"Ahmad Rizki Pratama, S.Kom","father":"Bapak H. Muhammad Pratama","mother":"Ibu Hj. Siti Aminah","photo":""},
   "bride": {"name":"Fatimah","fullName":"Fatimah Azzahra, S.Pd","father":"Bapak H. Abdullah Azzahra","mother":"Ibu Hj. Nur Halimah","photo":""},
   "quote":"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri.",
-  "quoteSource":"QS. Ar-Rum: 21"
+  "quoteSource":"QS. Ar-Rum: 21",
+  "whatsapp":"",
+  "whatsappEnabled":true
 }'::jsonb),
 ('events', '[
   {"id":"akad","title":"Akad Nikah","date":"2026-10-15","time":"08:00","endTime":"10:00","venue":"Masjid Agung Al-Azhar","address":"Jl. Sisingamangaraja No. 1, Jakarta Selatan","mapUrl":"https://maps.google.com/?q=-6.2447,106.7951"},
