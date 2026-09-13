@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     let ogTitle = 'The Wedding of Andika & Rezki — Undangan Pernikahan';
     let ogDesc = 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: Muhammad Andik & Rezkianita.';
     let ogUrl = `${origin}/`;
-    let ogImage = `${origin}/api/og-image`;
+    let ogImage = `${origin}/api/og-image.jpg`;
 
     // 1. Fetch live config from Supabase
     try {
@@ -46,6 +46,9 @@ module.exports = async (req, res) => {
           if (val.title) ogTitle = val.title;
           if (val.description) ogDesc = val.description;
           if (val.url) ogUrl = val.url;
+          if (val.image && (val.image.startsWith('https://') || val.image.startsWith('http://'))) {
+            ogImage = val.image;
+          }
         }
       }
     } catch (e) {
