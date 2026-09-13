@@ -53,7 +53,7 @@ var DEFAULT_DATA = {
     title: 'The Wedding of Andika & Rezki — Undangan Pernikahan',
     description: 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: Muhammad Andik & Rezkianita.',
     image: '',
-    url: 'https://andika-rezkianita.vercel.app/'
+    url: 'https://andikareskianita.vercel.app/'
   }
 };
 

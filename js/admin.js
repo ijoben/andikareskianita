@@ -922,7 +922,7 @@ function loadSettings() {
 
   var defaultTitle = 'The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan';
   var defaultDesc = 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada pernikahan kami: ' + groomName + ' & ' + brideName + '.';
-  var defaultUrl = 'https://andika-rezkianita.vercel.app/';
+  var defaultUrl = 'https://andikareskianita.vercel.app/';
 
   var titleInput = $('og-title-input');
   var descInput = $('og-desc-input');
@@ -956,7 +956,7 @@ function updateLiveOgPreview() {
 
   var title = (titleInput && titleInput.value.trim()) || og.title || ('The Wedding of ' + groomName + ' & ' + brideName + ' — Undangan Pernikahan');
   var desc = (descInput && descInput.value.trim()) || og.description || ('Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu...');
-  var rawUrl = (urlInput && urlInput.value.trim()) || og.url || 'https://andika-rezkianita.vercel.app/';
+  var rawUrl = (urlInput && urlInput.value.trim()) || og.url || 'https://andikareskianita.vercel.app/';
   var displayUrl = rawUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
 
   var prevTitle = $('og-preview-title');

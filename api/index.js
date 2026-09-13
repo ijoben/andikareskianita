@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     let html = fs.readFileSync(htmlPath, 'utf8');
 
     // Determine host
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'andika-rezkianita.vercel.app';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'andikareskianita.vercel.app';
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const origin = `${proto}://${host}`;
 

@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       return res.status(200).send(buffer);
     }
 
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'andika-rezkianita.vercel.app';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'andikareskianita.vercel.app';
     const proto = req.headers['x-forwarded-proto'] || 'https';
     return res.redirect(302, `${proto}://${host}/assets/images/og-thumbnail.jpg`);
   } catch (err) {
